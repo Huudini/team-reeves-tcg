@@ -24,17 +24,37 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 .setchoice .setname{font-weight:600;color:#eef4ff}
 .setchoice .setmeta{display:block;color:#aac0df;font-size:11px}
 @media(max-width:720px){.setmatchlist{max-height:180px;overflow:auto;padding-right:4px}}
+
+/* Shared family cloud account */
+.cloud-panel{margin:14px 0;padding:15px 18px;border:1px solid #3d5d74;border-radius:15px;background:#182638}
+.cloud-panel .cloud-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cloud-panel .cloud-line>*{flex:0 1 auto}
+.cloud-panel input{max-width:min(100%,360px)}
+.cloud-panel .cloud-note{color:#b7c8e2;font-size:12px;margin:7px 0}
+.cloud-locked .tabs,.cloud-locked .tab{display:none!important}
+.cloud-status{color:#f2cf79;font-size:13px}
+.cloud-ok{color:#69e5ba}
+.cloud-panel button:disabled{opacity:.55;cursor:wait}
 </style></head><body><header><h1>⚡ Collect Team Reeves</h1><p>Complete your sets. Find the missing cards. Showcase your favorites.</p></header><main>
 <div class="stats" id="globalStats" style="display:none"><div class="stat"><strong id="allUnique">0</strong><small>Unique cards owned</small></div><div class="stat"><strong id="setOwned">0 / 0</strong><small>Selected set complete</small></div><div class="stat"><strong id="setsStarted">0</strong><small>Sets started</small></div><div class="stat"><strong id="favCount">0</strong><small>Showcase cards</small></div></div>
+<section class="cloud-panel" aria-label="Family cloud sync">
+  <div class="cloud-line"><strong>☁️ Team Reeves shared collection</strong><span class="cloud-status" id="cloudStatus" role="status">Checking cloud configuration…</span></div>
+  <p class="cloud-note" id="cloudHelp">When configured, only approved family members can view or edit the shared collection. Each person signs in with their own email.</p>
+  <div class="cloud-line" id="cloudLoginRow"><input id="cloudEmail" type="email" autocomplete="email" placeholder="Your authorized email address" aria-label="Family member email"><button id="cloudSignIn" type="button" class="accent">Email me a sign-in link</button></div>
+  <div class="cloud-line" id="cloudSignedIn" style="display:none"><span id="cloudWho"></span><button id="cloudRefresh" type="button">↻ Sync now</button><button id="cloudSignOut" type="button">Sign out</button></div>
+  <div class="cloud-line" id="cloudImportRow" style="display:none;margin-top:10px"><button id="cloudImportLocal" type="button">Import this device’s old cards into family collection</button><span class="cloud-note" id="cloudImportHint">This adds your previous local cards, favorites, and manual values without deleting other family entries.</span></div>
+</section>
 <nav class="tabs" aria-label="Binder sections"><button data-tab="home" class="active">🏠 Home</button><button data-tab="binder">📚 Set binder</button><button data-tab="sets">📊 My sets</button><button data-tab="add">📸 Add cards</button><button data-tab="showcase">⭐ Showcase</button><button data-tab="backup">💾 Backup</button></nav>
 <section id="home" class="tab"><div class="hero"><div><span class="eyebrow">COLLECT TEAM REEVES</span><h2>Welcome to Team Reeves’ binder</h2><p>Complete every set. Celebrate the cards you love most.</p><div class="stats"><div class="stat"><strong id="homeCount">0</strong><small>Unique cards</small></div><div class="stat"><strong id="homeSets">0</strong><small>Sets started</small></div><div class="stat"><strong id="homeStars">0</strong><small>Featured cards</small></div></div><div class="homeactions"><button class="accent" id="homeBinder">Explore collection</button><button id="homeScan">📸 Scan nine cards</button></div></div><div class="heroart" id="heroart"><div class="featureplaceholder">Star favorite cards in the binder to fill this display.</div></div></div><div class="homegrid"><div class="homebox"><h3>⭐ Featured card</h3><div id="homeFeatured" class="featured"><p class="hint">Your favorite card appears here once you star one in your binder.</p></div></div><div class="homebox"><div class="subline"><h3>Cards in your spotlight</h3><button class="small" id="homeShowcase">View all →</button></div><div class="carouselbar"><button type="button" id="favPrev" class="small" aria-label="Previous favorite">‹</button><button type="button" id="favNext" class="small" aria-label="Next favorite">›</button></div><div id="homeStrip" class="strip auto-carousel"><p class="hint">Star the best cards you own and they'll appear here.</p></div></div></div><div class="homebox"><div class="subline"><h3>💎 Top Value Cards</h3><span class="hint">TCGplayer USD market prices via TCGdex · manual fallback</span></div><div class="controls"><label class="field">Card ID (e.g. sv3pt5-199)<input id="priceCardId" placeholder="Set ID-card number"></label><label class="field">Estimated value (USD)<input id="priceAmount" type="number" min="0" step="0.01" placeholder="25.00"></label><button id="priceSave" class="accent">Save value</button></div><p id="priceMsg" class="hint">Manual value overrides automatic pricing when entered. Only cards you own appear in Top 10. Values are estimates, not sale guarantees.</p><div class="subline" style="margin:8px 0 12px"><span class="hint" id="marketStatus" role="status">Market prices load when you open Home.</span><button id="refreshMarket" class="small" type="button">↻ Refresh market prices</button></div><div class="carouselbar"><button type="button" id="valuePrev" class="small" aria-label="Previous top card">‹</button><button type="button" id="valueNext" class="small" aria-label="Next top card">›</button></div><div id="topValueStrip" class="strip auto-carousel"></div><div class="subline"><span class="hint">Total of priced owned cards (estimated, variants may differ)</span><strong id="knownValueTotal">$0.00</strong></div></div><div class="homebox"><div class="subline"><h3>📊 Your sets in progress</h3><button class="small" id="homeSetsButton">All sets →</button></div><div id="homeSetStrip" class="setgrid"></div></div></section>
 <section id="binder" class="tab hidden"><div class="panel"><h2>Browse a set</h2><div class="controls"><label class="field" style="flex:2 1 290px">Find set by name or printed code<input id="setLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search for a Pokémon set"><select id="set" aria-label="Select Pokémon set"><option>Loading sets…</option></select><div id="setChoices" class="setmatchlist"></div><small id="setLookupHint" class="hint">Type a set name or card code, then choose a match.</small></label><input id="search" placeholder="Search name or card number"><select id="filter" aria-label="Filter cards"><option value="all">All cards</option><option value="missing">Missing</option><option value="owned">Owned</option><option value="favorites">Showcase</option></select></div><div class="subline"><span id="setLabel" class="hint">Loading Pokémon sets…</span><span id="setProgressLabel" class="count"></span></div><div class="progress"><div id="progressFill"></div></div><p class="hint">Tap Regular, Reverse, or Holo to check off a card. Tap ☆ to put a card into your showcase. Variant options are simplified—verify the printing on your physical card.</p></div><div id="cards" class="cards"></div><div id="binderEmpty" class="message hidden">No cards match.</div></section>
 <section id="sets" class="tab hidden"><div class="panel"><h2>Your set progress</h2><p class="hint">Your collection is grouped by set. Select a set to open its checklist. Completion measures unique card numbers, not all print variants.</p><div class="controls"><label class="field">Show sets<select id="setsFilter"><option value="started">Started sets</option><option value="all">All sets</option><option value="complete">Completed sets</option></select></label><label class="field">Find a set<input id="setsSearch" placeholder="Search sets"></label></div></div><div id="setsGrid" class="setgrid"></div></section>
 <section id="add" class="tab hidden"><div class="panel"><h2>📷 Scan a 3 × 3 page of cards</h2><p class="hint">Photograph up to nine upright cards in an evenly spaced 3-by-3 grid. Use <strong>Mixed sets</strong> for assorted cards, or <strong>Single set</strong> for faster, more focused matching. The scanner reads printed card names and numbers, then suggests catalog matches for you to confirm. It cannot guarantee identification from artwork alone.</p><div class="controls"><label class="field">Photo of nine cards<input id="nineFile" type="file" accept="image/*" capture="environment"></label><label class="field">Scan mode<select id="nineMode"><option value="mixed">Mixed sets (automatic)</option><option value="single">Single set (faster)</option></select></label><label class="field" id="nineSetWrap" style="display:none">Set for recognition<input id="nineSetLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search scanning set"><select id="nineSet"><option value="">Loading sets…</option></select><div id="nineSetChoices" class="setmatchlist"></div><small id="nineSetHint" class="hint">Search by set name or code.</small></label><label class="field">Card printing<select id="nineVariant"><option value="normal">Regular</option><option value="reverse">Reverse</option><option value="holo">Holo</option></select></label></div><div class="controls"><button id="nineScan" class="accent" disabled>Identify 9 cards</button><button id="nineAddAll" disabled>Add confirmed matches</button></div><p class="hint" id="nineStatus">Photos are read in your browser. Matching queries are sent to TCGdex; the photo itself is not uploaded by this app. Always verify suggested card artwork, set and number.</p><div id="ninePreview" class="scan9preview"></div><div id="nineReview" class="scanreview" style="margin-top:12px"></div></div><div class="panel"><h2>Fastest ways to add cards</h2><p class="muted">For stacks from one expansion, using card numbers is fastest. For one-offs, photograph the bottom of the card or search in the binder.</p><div class="controls"><button id="jumpSet">Open selected set checklist</button><button id="jumpPhoto" class="accent">Take a card photo</button></div></div><div class="panel"><h2>⚡ Bulk add card numbers</h2><p class="hint">Choose any set, then enter local collector numbers separated by commas, spaces, or new lines (e.g. <code>4, 12, 65, 101</code>). Review matches before adding to your collection.</p><label class="field" style="margin-bottom:12px">Choose a set (search by name or printed card code)<input id="bulkSetLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search bulk-add set"><select id="bulkSet" aria-label="Set for bulk adding"><option value="">Loading sets…</option></select><div id="bulkSetChoices" class="setmatchlist"></div><small id="bulkSetHint" class="hint">Search for a set and select it below.</small></label><label class="field" for="bulkNumbers">Card numbers<textarea id="bulkNumbers" placeholder="4, 12, 65, 101"></textarea></label><div class="controls" style="margin-top:10px"><label class="field">Printing<select id="bulkVariant"><option value="normal">Regular</option><option value="reverse">Reverse</option><option value="holo">Holo</option></select></label><button id="bulkAdd" class="accent" type="button">Find matching cards</button></div><p id="bulkStatus" class="hint" role="status" aria-live="polite"></p><div id="bulkReview" class="bulk-review" aria-live="polite"></div><button id="bulkConfirm" type="button" class="accent hidden" style="margin-top:12px">Confirm and add matches</button></div><div class="panel" id="photoPanel"><h2>📸 Identify from a photo (beta)</h2><div class="notice">Photo scanning runs OCR in your browser. It reads the printed card number and suggests a match <strong>within the selected set</strong>. This is not guaranteed image recognition; always confirm the card before adding it.</div><div class="photoArea" style="margin-top:13px"><div class="flexcol"><label class="field">Take a photo or choose one<input type="file" id="filePhoto" accept="image/*" capture="environment"></label><img id="photoPreview" class="preview hidden" alt="Selected card photo"><button id="scanPhoto" class="accent" disabled>Find card from photo</button><div class="hint" id="ocrStatus">Tip: photograph one card straight-on, with the printed collector number near the bottom clear and in focus. The first scan downloads an OCR library.</div><label class="field">Or enter the number from the card<input id="manualNumber" placeholder="e.g. 025/198, or 25"></label><button id="findNumber">Find matching cards</button></div><div><h3 style="margin-top:0">Potential matches</h3><div id="photoResults" class="hint">Matches will appear here. Select the correct card and printing to add it.</div></div></div></div></section>
 <section id="showcase" class="tab hidden"><div class="panel"><h2>⭐ Your collection showcase</h2><p class="hint">Star any cards you own to feature them here. Showcase cards are yours to curate—not automatically ranked by price. Cards from other sets load using their saved IDs.</p></div><div id="showcaseGrid" class="showcase"></div><div id="showcaseEmpty" class="message hidden">Nothing here yet. In your binder, check off a card and tap ☆ to showcase it.</div></section>
-<section id="backup" class="tab hidden"><div class="panel"><h2>Keep your collection safe</h2><p>Your Team Reeves collection is saved locally in this browser—not automatically synced to other devices. Download a backup after a big scanning session.</p><div class="controls"><button id="export" class="accent">↓ Export collection backup</button><button id="import">↑ Import backup</button><input type="file" id="upload" accept="application/json,.json" class="hidden"></div><p class="hint">Import replaces local saved cards and showcase picks after confirmation. Backups also work with the earlier binder version; cards you already marked will carry over when you use this version in the same browser.</p></div></section>
-<div id="status" role="status"></div><footer>Unofficial fan project. Images and catalog data via <a style="color:#eecf7a" href="https://tcgdex.dev/">TCGdex</a>; not associated with The Pokémon Company. Card data and art require internet. OCR uses Tesseract.js downloaded on demand; photos are not intentionally uploaded to this app's server. Browser storage can be lost if website data is cleared. Prices are sourced from available TCGdex TCGplayer market quotes (USD), or labeled manual estimates. Quotes may be missing, outdated, or inaccurate. Prices do not account for condition or grading. This site does not synchronize collections online.</footer>
-</main><script>
+<section id="backup" class="tab hidden"><div class="panel"><h2>Keep your collection safe</h2><p>Export a JSON backup whenever you make major changes. With family cloud enabled, your owned cards, favorites, and manual values synchronize across approved devices.</p><div class="controls"><button id="export" class="accent">↓ Export collection backup</button><button id="import">↑ Import backup</button><input type="file" id="upload" accept="application/json,.json" class="hidden"></div><p class="hint">Import replaces local saved cards and showcase picks after confirmation. Backups also work with the earlier binder version; cards you already marked will carry over when you use this version in the same browser.</p></div></section>
+<div id="status" role="status"></div><footer>Unofficial fan project. Images and catalog data via <a style="color:#eecf7a" href="https://tcgdex.dev/">TCGdex</a>; not associated with The Pokémon Company. Card data and art require internet. OCR uses Tesseract.js downloaded on demand; photos are not intentionally uploaded to this app's server. Browser storage can be lost if website data is cleared. Prices are sourced from available TCGdex TCGplayer market quotes (USD), or labeled manual estimates. Quotes may be missing, outdated, or inaccurate. Prices do not account for condition or grading. With Supabase configured, approved family accounts can synchronize their card collection.</footer>
+</main><script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
 'use strict';
 const API='https://api.tcgdex.net/v2/en',KEY='personal-pokemon-binder-v1',FAVKEY='personal-pokemon-binder-showcase-v2';const $=id=>document.getElementById(id);let owned={},favorites={},sets=[],cards=[],setId='sv01',setInfo=null,setCache={},cardIndex={},scanImage=null,activeTab='binder',scanSeq=0;const variants=['normal','reverse','holo'],key=(id,v)=>id+'::'+v;
 try{owned=JSON.parse(localStorage.getItem(KEY)||'{}');favorites=JSON.parse(localStorage.getItem(FAVKEY)||'{}')}catch{owned={};favorites={}}
@@ -431,4 +451,113 @@ const renderHomeV5=renderHome;renderHome=async function(){await renderHomeV5();s
 // Backup market data is only a cache: actual user data (owned, favorites, manual values) remains in the existing backup format.
 $('priceMsg').textContent='Set a manual override for a card you own; otherwise the displayed value comes from available TCGplayer USD market pricing.';
 syncPriceUpdates();
+
+// V7: Shared family Supabase data. Each change is applied per card/field, not as a full replace.
+// Local saves are retained as a safety copy; cloud storage is authoritative after login.
+const CLOUD_LEGACY_KEY='team-reeves-before-cloud-import-v1';
+const cloudConfig=window.TEAM_REEVES_SUPABASE||{};
+const cloudConfigured=/^https:\/\/[^/]+\.supabase\.co\/?$/.test(cloudConfig.url||'')&&
+  !!cloudConfig.publishableKey&&!cloudConfig.publishableKey.startsWith('YOUR-');
+let cloudClient=null,cloudReady=false,cloudApplying=false,cloudBusy=false,cloudTimer=null,cloudPolling=null,cloudSession=null;
+let cloudPending={owned:{},favorites:{},values:{}};
+const cloneObject=o=>({...o});
+const cloudInitialLocal={owned:cloneObject(owned),favorites:cloneObject(favorites),values:cloneObject(cardValues)};
+// Preserve existing browser data BEFORE any cloud data replaces it.
+if(!cloudConfigured || !localStorage.getItem(CLOUD_LEGACY_KEY))try{localStorage.setItem(CLOUD_LEGACY_KEY,JSON.stringify(cloudInitialLocal))}catch{}
+let cloudLastLocal={owned:cloneObject(owned),favorites:cloneObject(favorites),values:cloneObject(cardValues)};
+const cloudSnapshot=()=>({owned:cloneObject(owned),favorites:cloneObject(favorites),values:cloneObject(cardValues)});
+function cloudNotice(message,good=false){$('cloudStatus').textContent=message;$('cloudStatus').classList.toggle('cloud-ok',good)}
+function cloudLocked(lock){document.body.classList.toggle('cloud-locked',!!lock)}
+function cloudHasPending(){return Object.values(cloudPending).some(o=>Object.keys(o).length)}
+function cloudDelta(before,after){let result={};for(const k of new Set([...Object.keys(before),...Object.keys(after)]))if(JSON.stringify(before[k])!==JSON.stringify(after[k]))result[k]=Object.hasOwn(after,k)?after[k]:null;return result}
+function cloudQueueChanges(){
+ if(cloudApplying)return;
+ const current=cloudSnapshot();
+ for(const field of ['owned','favorites','values'])Object.assign(cloudPending[field],cloudDelta(cloudLastLocal[field],current[field]));
+ cloudLastLocal=current;
+ if(cloudReady)cloudSchedule();
+}
+function cloudSchedule(){if(cloudTimer)clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudFlush(),450)}
+function cloudOverlay(target,patch){for(const [k,v] of Object.entries(patch)){if(v===null)delete target[k];else target[k]=v;}return target}
+async function cloudGet(){const {data,error}=await cloudClient.from('team_reeves_collection').select('owned,favorites,card_values,revision').eq('id','team-reeves').single();if(error)throw error;return data}
+async function cloudPull(){
+ if(!cloudReady||cloudBusy)return;
+ try{
+  const data=await cloudGet();
+  cloudApplying=true;
+  owned=cloudOverlay(cloneObject(data.owned||{}),cloudPending.owned);
+  favorites=cloudOverlay(cloneObject(data.favorites||{}),cloudPending.favorites);
+  cardValues=cloudOverlay(cloneObject(data.card_values||{}),cloudPending.values);
+  localStorage.setItem(KEY,JSON.stringify(owned));localStorage.setItem(FAVKEY,JSON.stringify(favorites));localStorage.setItem(PRICEKEY,JSON.stringify(cardValues));
+  cloudLastLocal=cloudSnapshot();
+  cloudApplying=false;
+  updateView();renderHome();renderMarketTopValues();
+  cloudNotice('Synced · version '+data.revision,true);
+ }catch(e){cloudApplying=false;cloudNotice('Sync failed: '+e.message);}
+}
+async function cloudFlush(){
+ if(!cloudReady||cloudBusy||!cloudHasPending())return;
+ cloudBusy=true;let succeeded=false;
+ const batch=Object.fromEntries(Object.entries(cloudPending).map(([k,v])=>[k,cloneObject(v)]));
+ try{
+  const {data,error}=await cloudClient.rpc('team_reeves_apply_patch',{
+   p_owned:batch.owned,p_favorites:batch.favorites,p_values:batch.values
+  });
+  if(error)throw error;
+  if(!data?.length)throw Error('Account not authorized for family collection');
+  for(const field of ['owned','favorites','values'])for(const [k,v] of Object.entries(batch[field])){
+   if(Object.hasOwn(cloudPending[field],k)&&JSON.stringify(cloudPending[field][k])===JSON.stringify(v))delete cloudPending[field][k];
+  }
+  succeeded=true;cloudNotice('Changes saved to family cloud',true);
+ }catch(e){cloudNotice('Cloud save failed; changes remain on this device: '+e.message);}
+ finally{cloudBusy=false;}
+ if(cloudHasPending()){if(succeeded)cloudSchedule();else setTimeout(()=>cloudFlush(),8000);}else await cloudPull();
+}
+async function cloudAuthChanged(session){
+ if(session?.user?.id && cloudReady && cloudSession?.user?.id===session.user.id)return;
+ cloudSession=session;cloudReady=false;
+ $('cloudSignedIn').style.display=session?'flex':'none';
+ $('cloudLoginRow').style.display=session?'none':'flex';
+ $('cloudImportRow').style.display=session?'flex':'none';
+ if(!session){cloudLocked(true);cloudNotice('Sign in with an approved family email');return;}
+ $('cloudWho').textContent=session.user?.email||'Family member';cloudLocked(false);
+ cloudNotice('Connecting to shared collection…');
+ try{await cloudGet();cloudReady=true;cloudPending={owned:{},favorites:{},values:{}};await cloudPull();}
+ catch(e){cloudReady=false;cloudLocked(true);cloudNotice('Family access denied or setup incomplete: '+e.message);}
+}
+$('cloudSignIn').onclick=async()=>{
+ const email=$('cloudEmail').value.trim();if(!email||!/^\S+@\S+\.\S+$/.test(email)){cloudNotice('Enter a valid email address');return}
+ const button=$('cloudSignIn');button.disabled=true;
+ try{const {error}=await cloudClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});if(error)throw error;cloudNotice('Check your email for the sign-in link.');}
+ catch(e){cloudNotice('Could not send link: '+e.message)}finally{button.disabled=false;}
+};
+$('cloudSignOut').onclick=async()=>{if(cloudHasPending())await cloudFlush();await cloudClient.auth.signOut();};
+$('cloudRefresh').onclick=async()=>{if(cloudHasPending())await cloudFlush();await cloudPull();};
+$('cloudImportLocal').onclick=async()=>{
+ let previous;try{previous=JSON.parse(localStorage.getItem(CLOUD_LEGACY_KEY)||'{}')}catch{previous={}}
+ if(!previous.owned||!Object.keys(previous.owned).length){cloudNotice('No previous local cards to import.');return;}
+ if(!confirm('Merge cards saved on this device before cloud setup into the shared family collection? Existing cloud cards will stay.'))return;
+ for(const field of ['owned','favorites','values'])for(const [k,v] of Object.entries(previous[field]||{}))if(v!==null&&v!==false){cloudPending[field][k]=v;}
+ cloudNotice('Importing old cards…');await cloudFlush();
+};
+// Install the cloud hooks AFTER existing local and valuation handlers.
+const cloudLocalSave=save;save=function(){cloudLocalSave();cloudQueueChanges();if(!cloudConfigured)try{localStorage.setItem(CLOUD_LEGACY_KEY,JSON.stringify(cloudSnapshot()))}catch{}};
+const cloudPriceSave=$('priceSave').onclick;
+$('priceSave').onclick=()=>{cloudPriceSave();cloudQueueChanges();if(!cloudConfigured)try{localStorage.setItem(CLOUD_LEGACY_KEY,JSON.stringify(cloudSnapshot()))}catch{}};
+if(cloudConfigured){
+ if(!window.supabase?.createClient){cloudLocked(true);cloudNotice('Supabase library failed to load. Check internet connection.');}
+ else{
+  cloudLocked(true);
+  cloudClient=window.supabase.createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  cloudClient.auth.onAuthStateChange((_event,session)=>setTimeout(()=>cloudAuthChanged(session),0));
+  cloudClient.auth.getSession().then(({data,error})=>{if(error)cloudNotice(error.message);else cloudAuthChanged(data.session)});
+  cloudPolling=setInterval(()=>{if(document.visibilityState==='visible'&&cloudReady&&!cloudHasPending())cloudPull()},12000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&cloudReady){if(cloudHasPending())cloudFlush();else cloudPull();}});
+ }
+}else{
+ $('cloudLoginRow').style.display='none';$('cloudImportRow').style.display='none';
+ cloudNotice('Cloud not configured yet — local mode');
+ $('cloudHelp').textContent='Set up Supabase and fill in config.js to enable family sign-in. Until then, everything works locally as before.';
+}
+
 </script></body></html>
