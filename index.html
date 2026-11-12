@@ -39,8 +39,8 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 <div class="stats" id="globalStats" style="display:none"><div class="stat"><strong id="allUnique">0</strong><small>Unique cards owned</small></div><div class="stat"><strong id="setOwned">0 / 0</strong><small>Selected set complete</small></div><div class="stat"><strong id="setsStarted">0</strong><small>Sets started</small></div><div class="stat"><strong id="favCount">0</strong><small>Showcase cards</small></div></div>
 <section class="cloud-panel" aria-label="Family cloud sync">
   <div class="cloud-line"><strong>☁️ Team Reeves shared collection</strong><span class="cloud-status" id="cloudStatus" role="status">Checking cloud configuration…</span></div>
-  <p class="cloud-note" id="cloudHelp">When configured, only approved family members can view or edit the shared collection. Each person signs in with their own email.</p>
-  <div class="cloud-line" id="cloudLoginRow"><input id="cloudEmail" type="email" autocomplete="email" placeholder="Your authorized email address" aria-label="Family member email"><button id="cloudSignIn" type="button" class="accent">Email me a sign-in link</button></div>
+  <p class="cloud-note" id="cloudHelp">Sign in with Google using an approved family email address. Only approved family members can view or edit this collection.</p>
+  <div class="cloud-line" id="cloudLoginRow"><button id="cloudGoogleSignIn" type="button" class="accent">Continue with Google</button><span class="cloud-note">Use the Google account associated with your approved family email address.</span></div>
   <div class="cloud-line" id="cloudSignedIn" style="display:none"><span id="cloudWho"></span><button id="cloudRefresh" type="button">↻ Sync now</button><button id="cloudSignOut" type="button">Sign out</button></div>
   <div class="cloud-line" id="cloudImportRow" style="display:none;margin-top:10px"><button id="cloudImportLocal" type="button">Import this device’s old cards into family collection</button><span class="cloud-note" id="cloudImportHint">This adds your previous local cards, favorites, and manual values without deleting other family entries.</span></div>
 </section>
@@ -456,6 +456,7 @@ syncPriceUpdates();
 // Local saves are retained as a safety copy; cloud storage is authoritative after login.
 const CLOUD_LEGACY_KEY='team-reeves-before-cloud-import-v1';
 const cloudConfig=window.TEAM_REEVES_SUPABASE||{};
+const oauthParams=new URLSearchParams(location.search);const oauthHash=new URLSearchParams(location.hash.replace(/^#/,''));const oauthError=oauthParams.get('error_description')||oauthHash.get('error_description');
 const cloudConfigured=/^https:\/\/[^/]+\.supabase\.co\/?$/.test(cloudConfig.url||'')&&
   !!cloudConfig.publishableKey&&!cloudConfig.publishableKey.startsWith('YOUR-');
 let cloudClient=null,cloudReady=false,cloudApplying=false,cloudBusy=false,cloudTimer=null,cloudPolling=null,cloudSession=null;
@@ -519,17 +520,21 @@ async function cloudAuthChanged(session){
  $('cloudSignedIn').style.display=session?'flex':'none';
  $('cloudLoginRow').style.display=session?'none':'flex';
  $('cloudImportRow').style.display=session?'flex':'none';
- if(!session){cloudLocked(true);cloudNotice('Sign in with an approved family email');return;}
- $('cloudWho').textContent=session.user?.email||'Family member';cloudLocked(false);
+ if(!session){cloudLocked(true);cloudNotice(oauthError?'Google sign-in error: '+oauthError:'Continue with Google to access the shared family collection');return;}
+ $('cloudWho').textContent=session.user?.email||'Family member';cloudLocked(true);
  cloudNotice('Connecting to shared collection…');
- try{await cloudGet();cloudReady=true;cloudPending={owned:{},favorites:{},values:{}};await cloudPull();}
+ try{await cloudGet();cloudReady=true;cloudLocked(false);cloudPending={owned:{},favorites:{},values:{}};await cloudPull();}
  catch(e){cloudReady=false;cloudLocked(true);cloudNotice('Family access denied or setup incomplete: '+e.message);}
 }
-$('cloudSignIn').onclick=async()=>{
- const email=$('cloudEmail').value.trim();if(!email||!/^\S+@\S+\.\S+$/.test(email)){cloudNotice('Enter a valid email address');return}
- const button=$('cloudSignIn');button.disabled=true;
- try{const {error}=await cloudClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});if(error)throw error;cloudNotice('Check your email for the sign-in link.');}
- catch(e){cloudNotice('Could not send link: '+e.message)}finally{button.disabled=false;}
+$('cloudGoogleSignIn').onclick=async()=>{
+ if(!cloudClient){cloudNotice('Cloud connection is not configured yet.');return;}
+ const button=$('cloudGoogleSignIn');button.disabled=true;
+ cloudNotice('Opening Google sign-in…');
+ try{
+  const redirectTo=location.origin+location.pathname;
+  const {error}=await cloudClient.auth.signInWithOAuth({provider:'google',options:{redirectTo}});
+  if(error)throw error;
+ }catch(e){cloudNotice('Google sign-in could not start: '+e.message);button.disabled=false;}
 };
 $('cloudSignOut').onclick=async()=>{if(cloudHasPending())await cloudFlush();await cloudClient.auth.signOut();};
 $('cloudRefresh').onclick=async()=>{if(cloudHasPending())await cloudFlush();await cloudPull();};
@@ -557,7 +562,7 @@ if(cloudConfigured){
 }else{
  $('cloudLoginRow').style.display='none';$('cloudImportRow').style.display='none';
  cloudNotice('Cloud not configured yet — local mode');
- $('cloudHelp').textContent='Set up Supabase and fill in config.js to enable family sign-in. Until then, everything works locally as before.';
+ $('cloudHelp').textContent='Set up Supabase and fill in config.js to enable Google family sign-in. Until then, everything works locally as before.';
 }
 
 </script></body></html>
