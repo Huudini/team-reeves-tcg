@@ -761,7 +761,39 @@ let symbolPage=1;
 const SYMBOL_PAGE_SIZE=72;
 function symbolUsesCode(set){return /^(sv|me)\d/i.test(set.id) && Boolean(printedSetCode(set));}
 function symbolYearMatch(set,era){const y=Number((set.releaseDate||'').slice(0,4));if(era==='all')return true;if(!y)return false;if(era==='2023+')return y>=2023;const [a,b]=era.split('-').map(Number);return y>=a&&y<=b;}
-function symbolImageSrc(set){let url=set.symbol;if(typeof url!=='string'||!/^https:\/\//.test(url))return '';return /\.(?:png|jpg|jpeg|webp)(?:\?.*)?$/i.test(url)?url:url+'.png';}
+// Prefer the actual graphic printed on cards, not a booster/set logo.
+// A few TCGdex symbols are missing or fail to load; Pokémon TCG images provide a
+// second, independent source. Some promo/early sets genuinely have no symbol.
+function symbolImageSources(set){
+ const urls=[];
+ const source=typeof set?.symbol==='string' ? set.symbol.trim() : '';
+ if(/^https:\/\//i.test(source)){
+  const base=source.replace(/\.(?:png|webp|jpg|jpeg)(?:\?.*)?$/i,'');
+  urls.push(base+'.png',base+'.webp');
+ }
+ // Pokémon TCG set identifiers generally match TCGdex's for standard expansions;
+ // use a verified-format set-ID asset only, never an unrelated set logo.
+ if(/^[a-zA-Z0-9.-]+$/.test(set?.id||''))
+  urls.push('https://images.pokemontcg.io/'+encodeURIComponent(set.id)+'/symbol.png');
+ return [...new Set(urls)];
+}
+function showSetSymbol(art,set){
+ const sources=symbolImageSources(set);
+ const img=document.createElement('img');img.loading='lazy';img.alt=set.name+' printed set symbol';
+ img.referrerPolicy='no-referrer';
+ let pos=0;
+ function next(){
+  if(pos<sources.length){img.src=sources[pos++];return;}
+  img.remove();
+  const fallback=document.createElement('span');fallback.className='symbol-fallback';
+  fallback.textContent=set.id==='base1'?'Base Set has no printed expansion symbol':'Set symbol not available from image sources';
+  art.replaceChildren(fallback);
+ }
+ img.onerror=next;
+ art.append(img);
+ next();
+}
+
 function renderSymbolGuide(){
  const grid=$('symbolGrid');if(!grid)return;
  const query=safe($('symbolSearch').value).trim(),era=$('symbolEra').value,marker=$('symbolMarker').value;
@@ -777,14 +809,13 @@ function renderSymbolGuide(){
  for(const s of arr.slice(0,symbolPage*SYMBOL_PAGE_SIZE)){
   const tile=document.createElement('button');tile.className='symbol-tile';tile.type='button';tile.title='Browse cards in '+s.name;
   const art=document.createElement('div');art.className='symbol-art';
-  const code=printedSetCode(s),newCode=symbolUsesCode(s),src=symbolImageSrc(s);
+  const code=printedSetCode(s),newCode=symbolUsesCode(s);
   if(newCode){const abbr=document.createElement('span');abbr.className='printed-code';abbr.textContent=code;art.append(abbr);}
-  else if(src){const img=document.createElement('img');img.loading='lazy';img.alt=s.name+' expansion symbol';img.src=src;img.onerror=()=>{art.replaceChildren();const fallback=document.createElement('span');fallback.className='symbol-fallback';fallback.textContent='Symbol image unavailable';art.append(fallback)};art.append(img);}
-  else{const fallback=document.createElement('span');fallback.className='symbol-fallback';fallback.textContent='No set symbol available';art.append(fallback);}
+  else showSetSymbol(art,s);
   tile.append(art);
   const title=document.createElement('strong');title.textContent=s.name;tile.append(title);
   const details=document.createElement('small');const dt=s.releaseDate?`Released ${s.releaseDate}`:'Release date unavailable';details.textContent=`${dt} · ${s.cardCount?.total??'?'} cards`;tile.append(details);
-  const hint=document.createElement('span');hint.className='symbol-hint';hint.textContent=newCode?'Printed code on card':src?'Expansion symbol on card':'No image in catalog';tile.append(hint);
+  const hint=document.createElement('span');hint.className='symbol-hint';hint.textContent=newCode?'Printed code on card':'Expansion symbol on card';tile.append(hint);
   tile.onclick=async()=>{setTab('binder');$('setLookup').value='';populateSetChoices('set','setLookup','setLookupHint',s.id);await loadSet(s.id);window.scrollTo({top:0,behavior:'smooth'})};frag.append(tile);
  }
  grid.append(frag);$('symbolMore').classList.toggle('hidden',arr.length<=symbolPage*SYMBOL_PAGE_SIZE);
