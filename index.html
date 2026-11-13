@@ -75,6 +75,9 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 .symbol-hint{color:#a9bdd8;font-size:11px}
 @media(max-width:620px){.symbol-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.symbol-tile{padding:9px}.symbol-art{height:66px}}
 
+/* Japanese to English display names */
+.jp-english{font-size:12px;color:#b5e9ce;line-height:1.4;margin:4px 0 7px;font-weight:650;overflow-wrap:anywhere}
+.jp-english.unavailable{color:#abb8ca;font-weight:400;font-style:italic}
 /* Japanese modern set browser */
 #jpCards .card{min-width:0}#jpCards .card p{overflow-wrap:anywhere}#jpBulkReview .result{flex-wrap:wrap}#jpBulkReview .result .jp-count{font-weight:700;min-width:55px;text-align:center}
 .jp-badge{display:inline-block;padding:3px 8px;border-radius:8px;background:#2e4e72;color:#d5eafa;font-weight:700;font-size:11px}
@@ -92,7 +95,7 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 <section id="binder" class="tab hidden"><div class="panel"><h2>Browse a set</h2><div class="controls"><label class="field" style="flex:2 1 290px">Find set by name or printed code<input id="setLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search for a Pokémon set"><select id="set" aria-label="Select Pokémon set"><option>Loading sets…</option></select><div id="setChoices" class="setmatchlist"></div><small id="setLookupHint" class="hint">Type a set name or card code, then choose a match.</small></label><input id="search" placeholder="Search name or card number"><select id="filter" aria-label="Filter cards"><option value="all">All cards</option><option value="missing">Missing</option><option value="owned">Owned</option><option value="favorites">Showcase</option></select></div><div class="subline"><span id="setLabel" class="hint">Loading Pokémon sets…</span><span id="setProgressLabel" class="count"></span></div><div class="progress"><div id="progressFill"></div></div><p class="hint">Use + and − to adjust how many Regular, Reverse, or Holo copies you own. Tap ☆ to put a card into your showcase. Variant options are simplified—verify the printing on your physical card.</p></div><div id="cards" class="cards"></div><div id="binderEmpty" class="message hidden">No cards match.</div></section>
 
 <section id="japanese" class="tab hidden">
- <div class="panel"><h2>🇯🇵 Japanese Pokémon cards</h2><p class="hint">Modern Japanese expansions are listed separately from English sets. Search by Japanese set name or the printed set code (such as <b>sv2a</b> or <b>sv8a</b>). Japanese card IDs are stored separately from English cards.</p>
+ <div class="panel"><h2>🇯🇵 Japanese Pokémon cards</h2><p class="hint">Modern Japanese expansions are listed separately from English sets. Search by Japanese set name or the printed set code (such as <b>sv2a</b> or <b>sv8a</b>). Japanese card IDs are stored separately from English cards. <strong>English names</strong> appear under Japanese names when a reliable match exists; this does not translate attacks or card text.</p>
  <div class="controls"><label class="field" style="flex:2 1 300px">Japanese set or code<input id="jpSetSearch" type="search" placeholder="e.g. sv2a, sv8a, ポケモン" autocomplete="off"><select id="jpSetSelect" aria-label="Select Japanese set"><option>Loading Japanese sets…</option></select></label><label class="field">Find card in set<input id="jpCardSearch" type="search" placeholder="Name or number"></label><label class="field">Show<select id="jpCardFilter"><option value="all">All cards</option><option value="owned">Owned</option><option value="missing">Missing</option><option value="favorites">Favorites</option></select></label></div>
  <p id="jpStatus" class="hint" role="status">Japanese set catalog loads when you open this tab.</p><div class="stats" style="margin-top:10px"><div class="stat"><strong id="jpUnique">0</strong><small>Unique Japanese cards</small></div><div class="stat"><strong id="jpCopies">0</strong><small>Japanese copies</small></div><div class="stat"><strong id="jpProgress">—</strong><small>Selected set progress</small></div><div class="stat"><strong id="jpSets">0</strong><small>Japanese sets started</small></div></div></div>
  <div class="panel"><h2>⚡ Bulk add Japanese card numbers</h2><p class="hint">Uses the Japanese set selected above. Enter numbers separated by commas, spaces, or new lines. Repeated numbers add duplicate copies. Check the suggested matches before saving.</p><label class="field">Card numbers<textarea id="jpBulkNumbers" placeholder="001, 025, 025, 151"></textarea></label><div class="controls" style="margin-top:10px"><label class="field">Printing<select id="jpBulkVariant"><option value="normal">Regular</option><option value="reverse">Reverse</option><option value="holo">Holo</option></select></label><button class="accent" id="jpBulkFind">Find Japanese cards</button></div><div id="jpBulkReview" class="bulk-review"></div><button id="jpBulkConfirm" class="accent hidden" type="button">Add selected copies</button><p class="hint" id="jpBulkStatus" role="status"></p></div>
@@ -134,6 +137,7 @@ function makeCard(c){
  let top=document.createElement('div');top.className='cardtop';let star=document.createElement('button');star.className='star '+(favorites[c.id]?'on':'');star.textContent=favorites[c.id]?'★':'☆';star.title='Toggle showcase';star.setAttribute('aria-label','Toggle showcase for '+c.name);
  star.onclick=()=>{if(!ownedCard(c.id)){status('Add a copy before featuring this card.');return}favorites[c.id]=!favorites[c.id];if(!favorites[c.id])delete favorites[c.id];save();updateView()};top.append(star);el.append(top);
  let name=document.createElement('h3');name.title=c.name;name.textContent=c.name;el.append(name);
+ if(c.id.startsWith('ja@')){let english=document.createElement('div');english.className='jp-english'+(c.englishName?'':' unavailable');english.textContent=c.englishName?'English: '+c.englishName:'English name not available';el.append(english)}
  let info=document.createElement('p');info.textContent='#'+c.localId+' • '+(c.id.startsWith('ja@')?'🇯🇵 Japanese':(sets.find(s=>c.id.startsWith(s.id+'-'))?.name||''));el.append(info);
  if(ownedCard(c.id)){let tag=document.createElement('span');tag.className='ownedtag';tag.textContent='✓ '+totalCopies(c.id)+' owned';el.append(tag)}
  let rows=document.createElement('div');rows.className='variants';
@@ -843,6 +847,74 @@ const beforeSymbolTab=setTab;setTab=function(id){beforeSymbolTab(id);if(id==='sy
 // This keeps English inventory keys and existing Supabase JSON unchanged.
 const JP_API='https://api.tcgdex.net/v2/ja';
 let jpSets=[],jpCards=[],jpChosen='',jpReady=false,jpLoadToken=0,jpPending=null;
+// English card names are display metadata only; never change a card's Japanese inventory ID.
+let jpSpeciesMap=null,jpSpeciesPromise=null;
+const JP_ENGLISH_FALLBACK={
+ 'ピカチュウ':'Pikachu','リザードン':'Charizard','イーブイ':'Eevee',
+ 'ミュウ':'Mew','ミュウツー':'Mewtwo','ゲンガー':'Gengar',
+ 'ニンフィア':'Sylveon','ブラッキー':'Umbreon','エーフィ':'Espeon',
+ 'カイリュー':'Dragonite','ルカリオ':'Lucario','コイキング':'Magikarp',
+ 'サーナイト':'Gardevoir','テラパゴス':'Terapagos',
+ 'ふしぎなアメ':'Rare Candy','ハイパーボール':'Ultra Ball',
+ 'ネストボール':'Nest Ball','モンスターボール':'Poké Ball',
+ '基本炎エネルギー':'Basic Fire Energy','基本水エネルギー':'Basic Water Energy',
+ '基本草エネルギー':'Basic Grass Energy','基本雷エネルギー':'Basic Lightning Energy',
+ '基本超エネルギー':'Basic Psychic Energy','基本闘エネルギー':'Basic Fighting Energy',
+ '基本悪エネルギー':'Basic Darkness Energy','基本鋼エネルギー':'Basic Metal Energy'
+};
+async function jpLoadSpeciesNames(){
+ if(jpSpeciesMap)return jpSpeciesMap;
+ if(jpSpeciesPromise)return jpSpeciesPromise;
+ jpSpeciesPromise=(async()=>{
+  // Veekun records share a species ID between Japanese (1 / 11) and English (9).
+  // A single cached download avoids hundreds of translation API requests.
+  const lookup=new Map(Object.entries(JP_ENGLISH_FALLBACK));
+  try{
+   const url='https://raw.githubusercontent.com/veekun/pokedex/master/pokedex/data/csv/pokemon_species_names.csv';
+   const response=await fetch(url,{cache:'force-cache'});
+   if(!response.ok)throw Error('Name reference unavailable');
+   const body=await response.text(),species=new Map();
+   for(const line of body.split(/\r?\n/).slice(1)){
+    const fields=line.split(',');
+    if(!fields||fields.length<3)continue;
+    const id=fields[0],lang=+fields[1],name=fields[2].replace(/^\"|\"$/g,'').replace(/\"\"/g,'\"');
+    if(!species.has(id))species.set(id,{});
+    if(lang===9)species.get(id).en=name;
+    if(lang===11||lang===1){let value=species.get(id);if(lang===11||!value.ja)value.ja=name;}
+   }
+   for(const names of species.values())if(names.ja&&names.en)lookup.set(names.ja,names.en);
+  }catch(error){console.warn('Using offline Japanese name fallbacks:',error.message)}
+  jpSpeciesMap=lookup;return lookup;
+ })();return jpSpeciesPromise;
+}
+function jpTranslateName(japanese,map){
+ if(!japanese)return '';
+ const exact=map.get(japanese);if(exact)return exact;
+ // Ex and older rarity suffixes do not change the species identity.
+ let suffix='',base=japanese.trim();
+ const suffixMatch=base.match(/\s*(ex|EX|GX|VSTAR|VMAX|V|LV\.X)\s*$/i);
+ if(suffixMatch){suffix=suffixMatch[1];base=base.slice(0,suffixMatch.index).trim()}
+ let prefix='';if(base.startsWith('かがやく')){prefix='Radiant ';base=base.slice(4).trim()}
+ if(base.startsWith('メガ')){prefix='Mega ';base=base.slice(2).trim()}
+ const english=map.get(base);
+ return english?prefix+english+(suffix?' '+suffix:''):'';
+}
+async function jpEnrichEnglishNames(setId,seq,items){
+ const basicMap=await jpLoadSpeciesNames();
+ let englishByNumber=new Map();
+ try{
+  const r=await fetch(API+'/sets/'+encodeURIComponent(setId));
+  if(r.ok){const en=await r.json();for(const item of en.cards||[])if(item.name&&item.localId)englishByNumber.set(String(item.localId),item.name)}
+ }catch{} // Japanese-only sets usually have no matching English-language expansion.
+ if(seq!==jpLoadToken)return;
+ for(const c of items){
+  const english=englishByNumber.get(String(c.localId));
+  c.englishName=english||jpTranslateName(c.name,basicMap)||'';
+  cardIndex[c.id]=c;
+ }
+ if(activeTab==='japanese'){jpRender();if(jpPending)jpReviewRender()}
+}
+
 function jpKey(raw){return 'ja@'+raw}
 function jpSetIdOf(id){return id.startsWith('ja@')?id.slice(3,id.lastIndexOf('-')):''}
 function jpSetName(id){const s=jpSets.find(x=>x.id===id);return s?s.name+' ('+s.id+')':id}
@@ -886,12 +958,13 @@ async function jpChooseSet(id){
   for(const c of jpCards)cardIndex[c.id]=c;
   $('jpStatus').textContent=jpSetName(id)+' · '+jpCards.length+' cards';
   jpRender();
+  jpEnrichEnglishNames(id,seq,jpCards).catch(()=>{});
  }catch(e){if(seq===jpLoadToken)$('jpStatus').textContent='Unable to load Japanese set: '+e.message;}
 }
 function jpRender(){
  const q=safe($('jpCardSearch').value),f=$('jpCardFilter').value;
  jpCounts();const box=$('jpCards');box.replaceChildren();
- const matching=jpCards.filter(c=>safe(c.name+' '+c.localId+' '+c.id).includes(q) &&
+ const matching=jpCards.filter(c=>safe(c.name+' '+(c.englishName||'')+' '+c.localId+' '+c.id).includes(q) &&
  (f==='all'||(f==='owned'&&ownedCard(c.id))||(f==='missing'&&!ownedCard(c.id))||(f==='favorites'&&favorites[c.id])));
  const frag=document.createDocumentFragment();
  for(const c of matching){frag.append(makeCard(c));}
@@ -905,7 +978,7 @@ function jpReviewRender(){
  for(const item of jpPending.rows){
   const row=document.createElement('div');row.className='result';
   const img=document.createElement('img');img.alt=item.card.name;if(item.card.image)img.src=imgUrl(item.card);row.append(img);
-  const label=document.createElement('div');label.className='info';const b=document.createElement('strong');b.textContent=item.card.name;const small=document.createElement('small');small.textContent='#'+item.card.localId+' · '+jpSetName(jpPending.sid);label.append(b,small);row.append(label);
+  const label=document.createElement('div');label.className='info';const b=document.createElement('strong');b.textContent=item.card.name;const small=document.createElement('small');small.textContent='#'+item.card.localId+' · '+jpSetName(jpPending.sid);label.append(b,small);const en=document.createElement('span');en.className='jp-english'+(item.card.englishName?'':' unavailable');en.textContent=item.card.englishName?'English: '+item.card.englishName:'English name not available';label.append(en);row.append(label);
   const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Remove one '+item.card.name);minus.onclick=()=>{item.count=Math.max(0,item.count-1);jpReviewRender()};
   const qty=document.createElement('span');qty.className='jp-count';qty.textContent=item.count+' copies';
   const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.onclick=()=>{item.count++;jpReviewRender()};
