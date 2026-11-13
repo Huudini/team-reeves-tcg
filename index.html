@@ -74,6 +74,10 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 .symbol-badge{background:#2d425d;border-radius:6px;padding:3px 7px;color:#ffe2a0;font-size:11px;display:inline-block;align-self:flex-start}
 .symbol-hint{color:#a9bdd8;font-size:11px}
 @media(max-width:620px){.symbol-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.symbol-tile{padding:9px}.symbol-art{height:66px}}
+
+/* Japanese modern set browser */
+#jpCards .card{min-width:0}#jpCards .card p{overflow-wrap:anywhere}#jpBulkReview .result{flex-wrap:wrap}#jpBulkReview .result .jp-count{font-weight:700;min-width:55px;text-align:center}
+.jp-badge{display:inline-block;padding:3px 8px;border-radius:8px;background:#2e4e72;color:#d5eafa;font-weight:700;font-size:11px}
 </style></head><body><header><h1>⚡ Collect Team Reeves</h1><p>Complete your sets. Find the missing cards. Showcase your favorites.</p></header><main>
 <div class="stats" id="globalStats" style="display:none"><div class="stat"><strong id="allUnique">0</strong><small>Unique cards owned</small></div><div class="stat"><strong id="setOwned">0 / 0</strong><small>Selected set complete</small></div><div class="stat"><strong id="setsStarted">0</strong><small>Sets started</small></div><div class="stat"><strong id="favCount">0</strong><small>Showcase cards</small></div></div>
 <section class="cloud-panel" aria-label="Family cloud sync">
@@ -83,9 +87,18 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
   <div class="cloud-line" id="cloudSignedIn" style="display:none"><span id="cloudWho"></span><button id="cloudRefresh" type="button">↻ Sync now</button><button id="cloudSignOut" type="button">Sign out</button></div>
   <div class="cloud-line" id="cloudImportRow" style="display:none;margin-top:10px"><button id="cloudImportLocal" type="button">Import this device’s old cards into family collection</button><span class="cloud-note" id="cloudImportHint">This adds your previous local cards, favorites, and manual values without deleting other family entries.</span></div>
 </section>
-<nav class="tabs" aria-label="Binder sections"><button data-tab="home" class="active">🏠 Home</button><button data-tab="binder">📚 Set binder</button><button data-tab="sets">📊 My sets</button><button data-tab="add">📸 Add cards</button><button data-tab="showcase">⭐ Showcase</button><button data-tab="pikachu">⚡ Pikachu Tracker</button><button data-tab="symbolguide">🔎 Set Symbol Guide</button><button data-tab="backup">💾 Backup</button></nav>
+<nav class="tabs" aria-label="Binder sections"><button data-tab="home" class="active">🏠 Home</button><button data-tab="binder">📚 Set binder</button><button data-tab="sets">📊 My sets</button><button data-tab="add">📸 Add cards</button><button data-tab="showcase">⭐ Showcase</button><button data-tab="pikachu">⚡ Pikachu Tracker</button><button data-tab="japanese">🇯🇵 Japanese cards</button><button data-tab="symbolguide">🔎 Set Symbol Guide</button><button data-tab="backup">💾 Backup</button></nav>
 <section id="home" class="tab"><div class="hero"><div><span class="eyebrow">COLLECT TEAM REEVES</span><h2>Welcome to Team Reeves’ binder</h2><p>Complete every set. Celebrate the cards you love most.</p><div class="stats"><div class="stat"><strong id="homeCount">0</strong><small>Unique cards</small></div><div class="stat"><strong id="homeSets">0</strong><small>Sets started</small></div><div class="stat"><strong id="homeStars">0</strong><small>Featured cards</small></div></div><div class="homeactions"><button class="accent" id="homeBinder">Explore collection</button><button id="homeScan">📸 Scan nine cards</button></div></div><div class="heroart" id="heroart"><div class="featureplaceholder">Star favorite cards in the binder to fill this display.</div></div></div><div class="homegrid"><div class="homebox"><h3>⭐ Featured card</h3><div id="homeFeatured" class="featured"><p class="hint">Your favorite card appears here once you star one in your binder.</p></div></div><div class="homebox"><div class="subline"><h3>Cards in your spotlight</h3><button class="small" id="homeShowcase">View all →</button></div><div class="carouselbar"><button type="button" id="favPrev" class="small" aria-label="Previous favorite">‹</button><button type="button" id="favNext" class="small" aria-label="Next favorite">›</button></div><div id="homeStrip" class="strip auto-carousel"><p class="hint">Star the best cards you own and they'll appear here.</p></div></div></div><div class="homebox"><div class="subline"><h3>⚡ Team Reeves’ Pikachu Collection</h3><button class="small" id="pikaOpenTracker" type="button">Open Pikachu Tracker →</button></div><p class="hint" id="pikaHomeStatus">Finding Pikachu cards in your collection…</p><div class="carouselbar"><button id="pikaPrev" class="small" type="button" aria-label="Previous Pikachu">‹</button><button id="pikaNext" class="small" type="button" aria-label="Next Pikachu">›</button></div><div class="strip auto-carousel" id="pikaHomeCarousel"></div></div><div class="homebox"><div class="subline"><h3>💎 Top Value Cards</h3><span class="hint">TCGplayer USD market prices via TCGdex · manual fallback</span></div><div class="controls"><label class="field">Card ID (e.g. sv3pt5-199)<input id="priceCardId" placeholder="Set ID-card number"></label><label class="field">Estimated value (USD)<input id="priceAmount" type="number" min="0" step="0.01" placeholder="25.00"></label><button id="priceSave" class="accent">Save value</button></div><p id="priceMsg" class="hint">Manual value overrides automatic pricing when entered. Only cards you own appear in Top 10. Values are estimates, not sale guarantees.</p><div class="subline" style="margin:8px 0 12px"><span class="hint" id="marketStatus" role="status">Market prices load when you open Home.</span><button id="refreshMarket" class="small" type="button">↻ Refresh market prices</button></div><div class="carouselbar"><button type="button" id="valuePrev" class="small" aria-label="Previous top card">‹</button><button type="button" id="valueNext" class="small" aria-label="Next top card">›</button></div><div id="topValueStrip" class="strip auto-carousel"></div><div class="subline"><span class="hint">Total estimated value across priced copies (variants may differ)</span><strong id="knownValueTotal">$0.00</strong></div></div><div class="homebox"><div class="subline"><h3>📊 Your sets in progress</h3><button class="small" id="homeSetsButton">All sets →</button></div><div id="homeSetStrip" class="setgrid"></div></div></section>
 <section id="binder" class="tab hidden"><div class="panel"><h2>Browse a set</h2><div class="controls"><label class="field" style="flex:2 1 290px">Find set by name or printed code<input id="setLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search for a Pokémon set"><select id="set" aria-label="Select Pokémon set"><option>Loading sets…</option></select><div id="setChoices" class="setmatchlist"></div><small id="setLookupHint" class="hint">Type a set name or card code, then choose a match.</small></label><input id="search" placeholder="Search name or card number"><select id="filter" aria-label="Filter cards"><option value="all">All cards</option><option value="missing">Missing</option><option value="owned">Owned</option><option value="favorites">Showcase</option></select></div><div class="subline"><span id="setLabel" class="hint">Loading Pokémon sets…</span><span id="setProgressLabel" class="count"></span></div><div class="progress"><div id="progressFill"></div></div><p class="hint">Use + and − to adjust how many Regular, Reverse, or Holo copies you own. Tap ☆ to put a card into your showcase. Variant options are simplified—verify the printing on your physical card.</p></div><div id="cards" class="cards"></div><div id="binderEmpty" class="message hidden">No cards match.</div></section>
+
+<section id="japanese" class="tab hidden">
+ <div class="panel"><h2>🇯🇵 Japanese Pokémon cards</h2><p class="hint">Modern Japanese expansions are listed separately from English sets. Search by Japanese set name or the printed set code (such as <b>sv2a</b> or <b>sv8a</b>). Japanese card IDs are stored separately from English cards.</p>
+ <div class="controls"><label class="field" style="flex:2 1 300px">Japanese set or code<input id="jpSetSearch" type="search" placeholder="e.g. sv2a, sv8a, ポケモン" autocomplete="off"><select id="jpSetSelect" aria-label="Select Japanese set"><option>Loading Japanese sets…</option></select></label><label class="field">Find card in set<input id="jpCardSearch" type="search" placeholder="Name or number"></label><label class="field">Show<select id="jpCardFilter"><option value="all">All cards</option><option value="owned">Owned</option><option value="missing">Missing</option><option value="favorites">Favorites</option></select></label></div>
+ <p id="jpStatus" class="hint" role="status">Japanese set catalog loads when you open this tab.</p><div class="stats" style="margin-top:10px"><div class="stat"><strong id="jpUnique">0</strong><small>Unique Japanese cards</small></div><div class="stat"><strong id="jpCopies">0</strong><small>Japanese copies</small></div><div class="stat"><strong id="jpProgress">—</strong><small>Selected set progress</small></div><div class="stat"><strong id="jpSets">0</strong><small>Japanese sets started</small></div></div></div>
+ <div class="panel"><h2>⚡ Bulk add Japanese card numbers</h2><p class="hint">Uses the Japanese set selected above. Enter numbers separated by commas, spaces, or new lines. Repeated numbers add duplicate copies. Check the suggested matches before saving.</p><label class="field">Card numbers<textarea id="jpBulkNumbers" placeholder="001, 025, 025, 151"></textarea></label><div class="controls" style="margin-top:10px"><label class="field">Printing<select id="jpBulkVariant"><option value="normal">Regular</option><option value="reverse">Reverse</option><option value="holo">Holo</option></select></label><button class="accent" id="jpBulkFind">Find Japanese cards</button></div><div id="jpBulkReview" class="bulk-review"></div><button id="jpBulkConfirm" class="accent hidden" type="button">Add selected copies</button><p class="hint" id="jpBulkStatus" role="status"></p></div>
+ <div id="jpCards" class="cards"></div>
+ <p class="hint">Japanese prices are not inferred from US TCGplayer market quotes. You can set manual values using the card ID shown on each card, including its <code>ja@</code> prefix.</p>
+</section>
 <section id="symbolguide" class="tab hidden" aria-label="Pokémon set symbol guide">
 <div class="panel"><h2>🔎 Pokémon Set Symbol Guide</h2><p class="muted">Match the little symbol or letters printed beside the collector number on your Pokémon card. Older cards generally use a set symbol; modern cards use a printed set code like <strong>SCR</strong>.</p>
 <div class="controls"><label class="field" style="flex:2 1 230px">Search name, code, or catalog ID<input id="symbolSearch" type="search" placeholder="Try Stellar Crown, SCR, Jungle, or Base Set" autocomplete="off"></label><label class="field">Release period<select id="symbolEra"><option value="all">All eras</option><option value="1999-2003">1999–2003</option><option value="2004-2010">2004–2010</option><option value="2011-2016">2011–2016</option><option value="2017-2022">2017–2022</option><option value="2023+">2023 onward</option></select></label><label class="field">Card marker type<select id="symbolMarker"><option value="all">All markings</option><option value="code">Printed letter codes</option><option value="symbol">Set symbols</option></select></label></div>
@@ -113,7 +126,7 @@ function ownedCard(id){return totalCopies(id)>0}function uniqueIds(){const x=new
 function setTab(id){activeTab=id;document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('hidden',e.id!==id));document.querySelectorAll('.tabs button').forEach(e=>e.classList.toggle('active',e.dataset.tab===id));if(id==='sets')renderSets();if(id==='showcase')renderShowcase();}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 function progress(){let ids=uniqueIds(),setOwned=cards.filter(c=>ids.has(c.id)).length;let bySet=new Set([...ids].map(id=>setOfCard(id)));$('allUnique').textContent=ids.size;$('setOwned').textContent=`${setOwned} / ${cards.length}`;$('setsStarted').textContent=bySet.size;$('favCount').textContent=Object.keys(favorites).filter(id=>favorites[id]&&ids.has(id)).length;$('setProgressLabel').textContent=cards.length?Math.round(setOwned*100/cards.length)+'% complete':'';$('progressFill').style.width=(cards.length?setOwned*100/cards.length:0)+'%';}
-function setOfCard(id){let found=sets.find(s=>id.startsWith(s.id+'-'));return found?.id||id.slice(0,id.lastIndexOf('-'));}
+function setOfCard(id){if(id.startsWith('ja@'))return 'ja@'+id.slice(3,id.lastIndexOf('-'));let found=sets.find(s=>id.startsWith(s.id+'-'));return found?.id||id.slice(0,id.lastIndexOf('-'));}
 function renderBinder(){progress();const q=safe($('search').value),f=$('filter').value;let shown=cards.filter(c=>(safe(c.name+' '+c.localId+' '+c.id).includes(q))&&(f==='all'||(f==='owned'&&ownedCard(c.id))||(f==='missing'&&!ownedCard(c.id))||(f==='favorites'&&favorites[c.id])));$('cards').replaceChildren();$('binderEmpty').classList.toggle('hidden',shown.length>0);let frag=document.createDocumentFragment();for(const c of shown)frag.appendChild(makeCard(c));$('cards').appendChild(frag)}
 function makeCard(c){
  let el=document.createElement('article');el.className='card'+(ownedCard(c.id)?' owned':'');
@@ -121,7 +134,7 @@ function makeCard(c){
  let top=document.createElement('div');top.className='cardtop';let star=document.createElement('button');star.className='star '+(favorites[c.id]?'on':'');star.textContent=favorites[c.id]?'★':'☆';star.title='Toggle showcase';star.setAttribute('aria-label','Toggle showcase for '+c.name);
  star.onclick=()=>{if(!ownedCard(c.id)){status('Add a copy before featuring this card.');return}favorites[c.id]=!favorites[c.id];if(!favorites[c.id])delete favorites[c.id];save();updateView()};top.append(star);el.append(top);
  let name=document.createElement('h3');name.title=c.name;name.textContent=c.name;el.append(name);
- let info=document.createElement('p');info.textContent='#'+c.localId+' • '+(sets.find(s=>c.id.startsWith(s.id+'-'))?.name||'');el.append(info);
+ let info=document.createElement('p');info.textContent='#'+c.localId+' • '+(c.id.startsWith('ja@')?'🇯🇵 Japanese':(sets.find(s=>c.id.startsWith(s.id+'-'))?.name||''));el.append(info);
  if(ownedCard(c.id)){let tag=document.createElement('span');tag.className='ownedtag';tag.textContent='✓ '+totalCopies(c.id)+' owned';el.append(tag)}
  let rows=document.createElement('div');rows.className='variants';
  for(const [v,label] of [['normal','Regular'],['reverse','Reverse'],['holo','Holo']]){
@@ -203,7 +216,7 @@ async function loadSets(){try{const r=await fetch(API+'/sets');if(!r.ok)throw Er
  progress()}catch(e){$('setLabel').textContent='Catalog unavailable: internet required';status(String(e.message))}}
 
 function renderSets(){let ids=uniqueIds(),counts={};for(const id of ids){let sid=setOfCard(id);counts[sid]=(counts[sid]||0)+1}let f=$('setsFilter').value,q=safe($('setsSearch').value);let arr=sets.filter(s=>safe(setDisplayName(s)+' '+s.id).includes(q)).filter(s=>f==='all'||(f==='started'&&counts[s.id])||(f==='complete'&&counts[s.id]&&counts[s.id]>=s.cardCount?.total));$('setsGrid').replaceChildren();if(!arr.length){$('setsGrid').innerHTML='<p class="empty">No matching sets. Change the filter to “All sets” to get started.</p>';return}let frag=document.createDocumentFragment();for(let s of arr){let count=counts[s.id]||0,total=s.cardCount?.total||0,el=document.createElement('button');el.className='settile';let pct=total?Math.round(count*100/total):0;el.innerHTML='<strong>'+esc(setDisplayName(s))+'</strong><small>'+count+' / '+total+' cards • '+pct+'%</small><div class="progress"><div style="width:'+pct+'%"></div></div><small>Open set →</small>';el.onclick=async()=>{setTab('binder');await loadSet(s.id);window.scrollTo({top:0,behavior:'smooth'})};frag.append(el)}$('setsGrid').append(frag)}
-async function renderShowcase(){let idList=Object.keys(favorites).filter(id=>favorites[id]&&ownedCard(id));$('showcaseEmpty').classList.toggle('hidden',idList.length>0);$('showcaseGrid').replaceChildren();let seq=++scanSeq;for(let id of idList){let c=cardIndex[id];if(!c){try{let r=await fetch(API+'/cards/'+encodeURIComponent(id));if(r.ok)c=await r.json();if(c)cardIndex[id]=c}catch{}}if(seq!==scanSeq||activeTab!=='showcase')return;if(c)$('showcaseGrid').append(makeCard(c));else{let b=document.createElement('button');b.textContent=id+' (image unavailable) • remove ★';b.onclick=()=>{delete favorites[id];save();renderShowcase()};$('showcaseGrid').append(b)}}}
+async function renderShowcase(){let idList=Object.keys(favorites).filter(id=>favorites[id]&&ownedCard(id));$('showcaseEmpty').classList.toggle('hidden',idList.length>0);$('showcaseGrid').replaceChildren();let seq=++scanSeq;for(let id of idList){let c=cardIndex[id];if(!c){try{let japanese=id.startsWith('ja@');let r=await fetch((japanese?JP_API:API)+'/cards/'+encodeURIComponent(japanese?id.slice(3):id));if(r.ok)c=await r.json();if(c){if(japanese)c.id=id;cardIndex[id]=c}}catch{}}if(seq!==scanSeq||activeTab!=='showcase')return;if(c)$('showcaseGrid').append(makeCard(c));else{let b=document.createElement('button');b.textContent=id+' (image unavailable) • remove ★';b.onclick=()=>{delete favorites[id];save();renderShowcase()};$('showcaseGrid').append(b)}}}
 function numberEntries(text){const result=new Map();for(const raw of text.split(/[,\s;]+/).map(v=>v.trim()).filter(Boolean)){
  const token=raw.split('/')[0],n=token.replace(/^0+(?=\d)/,'').toLowerCase();if(!/^[A-Za-z0-9!?]+$/.test(n))continue;
  if(!result.has(n))result.set(n,{raw:token,count:0});result.get(n).count++;
@@ -268,7 +281,7 @@ setTab=function(id){oldSetTab(id);if(id==='home')renderHome();};
 const oldSave=save;
 save=function(){oldSave();renderHome();};
 let homeGeneration=0;
-async function fetchCardDetail(id){if(cardIndex[id])return cardIndex[id];try{const res=await fetch(API+'/cards/'+encodeURIComponent(id));if(!res.ok)return null;const c=await res.json();cardIndex[id]=c;return c}catch{return null}}
+async function fetchCardDetail(id){if(cardIndex[id])return cardIndex[id];try{const japanese=id.startsWith('ja@');const res=await fetch((japanese?JP_API:API)+'/cards/'+encodeURIComponent(japanese?id.slice(3):id));if(!res.ok)return null;const c=await res.json();if(japanese)c.id=id;cardIndex[id]=c;return c}catch{return null}}
 async function renderHome(){
  let ids=uniqueIds(),starIds=Object.keys(favorites).filter(id=>favorites[id]&&ids.has(id));
  $('homeCount').textContent=ids.size;$('homeSets').textContent=new Set([...ids].map(setOfCard)).size;$('homeStars').textContent=starIds.length;
@@ -284,7 +297,7 @@ async function renderHome(){
  const counts={};for(let id of ids){let sid=setOfCard(id);counts[sid]=(counts[sid]||0)+1}
  let top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4);$('homeSetStrip').replaceChildren();
  if(!top.length)$('homeSetStrip').innerHTML='<p class="hint">No sets started yet. Browse sets to begin your collection.</p>';
- for(let [sid,num] of top){let ss=sets.find(s=>s.id===sid);let total=ss?.cardCount?.total||0;let tile=document.createElement('button');tile.className='settile';let name=document.createElement('strong');name.textContent=ss?setDisplayName(ss):sid;let small=document.createElement('small');small.textContent=num+' / '+(total||'?')+' unique cards';let bar=document.createElement('div');bar.className='progress';let fill=document.createElement('div');fill.style.width=total?Math.min(100,num*100/total)+'%':'0%';bar.append(fill);tile.append(name,small,bar);tile.onclick=async()=>{setTab('binder');await loadSet(sid)};$('homeSetStrip').append(tile)}
+ for(let [sid,num] of top){let ss=sets.find(s=>s.id===sid);let total=ss?.cardCount?.total||0;let tile=document.createElement('button');tile.className='settile';let name=document.createElement('strong');name.textContent=ss?setDisplayName(ss):sid;let small=document.createElement('small');small.textContent=num+' / '+(total||'?')+' unique cards';let bar=document.createElement('div');bar.className='progress';let fill=document.createElement('div');fill.style.width=total?Math.min(100,num*100/total)+'%':'0%';bar.append(fill);tile.append(name,small,bar);tile.onclick=async()=>{if(sid.startsWith('ja@')){setTab('japanese');await jpChooseSet(sid.slice(3))}else{setTab('binder');await loadSet(sid)}};$('homeSetStrip').append(tile)}
 }
 $('homeBinder').onclick=()=>setTab('binder');$('homeScan').onclick=()=>setTab('add');$('homeShowcase').onclick=()=>setTab('showcase');$('homeSetsButton').onclick=()=>setTab('sets');
 initSetLookup('nineSet','nineSetLookup','nineSetHint',()=>{});
@@ -449,7 +462,7 @@ function getMarketEntry(id){
 async function refreshMarketPrices(force=false){
  const ids=[...uniqueIds()];const run=++pricingRun;
  if(!ids.length){$('marketStatus').textContent='Add cards to see market prices.';await renderMarketTopValues();return;}
- let todo=ids.filter(id=>force||!getMarketEntry(id));
+ let todo=ids.filter(id=>!id.startsWith('ja@')&&(force||!getMarketEntry(id)));
  $('marketStatus').textContent=todo.length?'Checking prices for '+todo.length+' owned cards…':'Using cached market prices (up to 24 hours old).';
  await renderMarketTopValues();
  let cursor=0,done=0,failed=0;
@@ -824,5 +837,115 @@ function renderSymbolGuide(){
 for(const id of ['symbolSearch','symbolEra','symbolMarker'])$(id).addEventListener(id==='symbolSearch'?'input':'change',()=>{symbolPage=1;renderSymbolGuide()});
 $('symbolMore').onclick=()=>{symbolPage++;renderSymbolGuide()};
 const beforeSymbolTab=setTab;setTab=function(id){beforeSymbolTab(id);if(id==='symbolguide')renderSymbolGuide()};
+
+
+// V12: Japanese inventory is namespaced as ja@<TCGdex Japanese card ID>.
+// This keeps English inventory keys and existing Supabase JSON unchanged.
+const JP_API='https://api.tcgdex.net/v2/ja';
+let jpSets=[],jpCards=[],jpChosen='',jpReady=false,jpLoadToken=0,jpPending=null;
+function jpKey(raw){return 'ja@'+raw}
+function jpSetIdOf(id){return id.startsWith('ja@')?id.slice(3,id.lastIndexOf('-')):''}
+function jpSetName(id){const s=jpSets.find(x=>x.id===id);return s?s.name+' ('+s.id+')':id}
+function jpCounts(){
+ const ids=[...uniqueIds()].filter(x=>x.startsWith('ja@'));
+ $('jpUnique').textContent=ids.length;
+ $('jpCopies').textContent=ids.reduce((n,id)=>n+totalCopies(id),0);
+ $('jpSets').textContent=new Set(ids.map(jpSetIdOf)).size;
+ $('jpProgress').textContent=jpCards.length?`${jpCards.filter(c=>ownedCard(c.id)).length} / ${jpCards.length}`:'—';
+}
+function jpListOptions(){
+ const input=safe($('jpSetSearch').value),selected=$('jpSetSelect').value;
+ const matches=jpSets.filter(s=>!input||safe(s.name+' '+s.id).includes(input));
+ const select=$('jpSetSelect');select.replaceChildren();
+ select.add(new Option(matches.length?'Choose a Japanese set…':'No matching Japanese sets',''));
+ for(const item of matches)select.add(new Option(item.name+' ('+item.id+')',item.id));
+ if(matches.some(x=>x.id===selected))select.value=selected;
+ else if(matches.length===1)select.value=matches[0].id;
+ return matches;
+}
+async function jpLoadCatalog(){
+ if(jpReady)return;
+ $('jpStatus').textContent='Loading Japanese set catalog…';
+ try{
+  const r=await fetch(JP_API+'/sets');if(!r.ok)throw Error('Japanese catalog HTTP '+r.status);
+  jpSets=await r.json();jpSets.sort((a,b)=>(b.releaseDate||'').localeCompare(a.releaseDate||''));
+  jpReady=true;jpListOptions();
+  $('jpStatus').textContent=jpSets.length+' Japanese expansions available. Choose a set above.';
+  jpCounts();
+ }catch(e){$('jpStatus').textContent='Japanese catalog unavailable: '+e.message;}
+}
+async function jpChooseSet(id){
+ if(!id)return;
+ jpChosen=id;$('jpSetSelect').value=id;
+ const seq=++jpLoadToken;$('jpStatus').textContent='Loading '+jpSetName(id)+'…';
+ $('jpCards').replaceChildren();jpCards=[];jpResetReview();
+ try{
+  const r=await fetch(JP_API+'/sets/'+encodeURIComponent(id));if(!r.ok)throw Error('Set unavailable (HTTP '+r.status+')');
+  const info=await r.json();if(seq!==jpLoadToken)return;
+  jpCards=(info.cards||[]).map(c=>({...c,id:jpKey(c.id)})).sort((a,b)=>Number(a.localId)-Number(b.localId)||a.localId.localeCompare(b.localId));
+  for(const c of jpCards)cardIndex[c.id]=c;
+  $('jpStatus').textContent=jpSetName(id)+' · '+jpCards.length+' cards';
+  jpRender();
+ }catch(e){if(seq===jpLoadToken)$('jpStatus').textContent='Unable to load Japanese set: '+e.message;}
+}
+function jpRender(){
+ const q=safe($('jpCardSearch').value),f=$('jpCardFilter').value;
+ jpCounts();const box=$('jpCards');box.replaceChildren();
+ const matching=jpCards.filter(c=>safe(c.name+' '+c.localId+' '+c.id).includes(q) &&
+ (f==='all'||(f==='owned'&&ownedCard(c.id))||(f==='missing'&&!ownedCard(c.id))||(f==='favorites'&&favorites[c.id])));
+ const frag=document.createDocumentFragment();
+ for(const c of matching){frag.append(makeCard(c));}
+ box.append(frag);
+ if(!matching.length&&jpCards.length){let p=document.createElement('p');p.className='hint';p.textContent='No cards match these filters.';box.append(p);}
+}
+function jpResetReview(){jpPending=null;$('jpBulkReview').replaceChildren();$('jpBulkConfirm').classList.add('hidden');}
+function jpReviewRender(){
+ const host=$('jpBulkReview');host.replaceChildren();
+ if(!jpPending)return;
+ for(const item of jpPending.rows){
+  const row=document.createElement('div');row.className='result';
+  const img=document.createElement('img');img.alt=item.card.name;if(item.card.image)img.src=imgUrl(item.card);row.append(img);
+  const label=document.createElement('div');label.className='info';const b=document.createElement('strong');b.textContent=item.card.name;const small=document.createElement('small');small.textContent='#'+item.card.localId+' · '+jpSetName(jpPending.sid);label.append(b,small);row.append(label);
+  const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Remove one '+item.card.name);minus.onclick=()=>{item.count=Math.max(0,item.count-1);jpReviewRender()};
+  const qty=document.createElement('span');qty.className='jp-count';qty.textContent=item.count+' copies';
+  const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.onclick=()=>{item.count++;jpReviewRender()};
+  const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.onclick=()=>{item.count=0;jpReviewRender()};
+  row.append(minus,qty,plus,remove);host.append(row);
+ }
+ $('jpBulkConfirm').classList.toggle('hidden',!jpPending.rows.some(x=>x.count>0));
+}
+$('jpSetSearch').addEventListener('input',jpListOptions);
+$('jpSetSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const sel=$('jpSetSelect');if(sel.value)jpChooseSet(sel.value);}});
+$('jpSetSelect').addEventListener('change',()=>jpChooseSet($('jpSetSelect').value));
+$('jpCardSearch').addEventListener('input',jpRender);
+$('jpCardFilter').addEventListener('change',jpRender);
+$('jpBulkNumbers').addEventListener('input',jpResetReview);
+$('jpBulkVariant').addEventListener('change',jpResetReview);
+$('jpBulkFind').onclick=()=>{
+ jpResetReview();if(!jpChosen||!jpCards.length){$('jpBulkStatus').textContent='Choose a Japanese set first.';return;}
+ const entries=numberEntries($('jpBulkNumbers').value),rows=[],missing=[];
+ for(const [normalized,entry] of entries){
+  const c=jpCards.find(x=>safe(x.localId).replace(/^0+(?=\d)/,'')===normalized);
+  if(c)rows.push({card:c,count:entry.count});else missing.push(entry.raw);
+ }
+ jpPending={sid:jpChosen,variant:$('jpBulkVariant').value,rows};jpReviewRender();
+ $('jpBulkStatus').textContent=rows.length+' matching cards'+(missing.length?' · Not found: '+missing.join(', '):'')+'. Review before adding.';
+};
+$('jpBulkConfirm').onclick=()=>{
+ const p=jpPending;if(!p)return;
+ if(jpChosen!==p.sid||$('jpBulkVariant').value!==p.variant){jpResetReview();$('jpBulkStatus').textContent='Set or printing changed; find cards again.';return;}
+ let n=0;for(const r of p.rows){if(!r.count)continue;owned[key(r.card.id,p.variant)]=getQty(r.card.id,p.variant)+r.count;n+=r.count;}
+ save();updateView();jpRender();$('jpBulkStatus').textContent='Added '+n+' Japanese copies to the family collection.';
+ // Keep review visible to allow correcting cards, without retyping the list.
+ $('jpBulkConfirm').classList.add('hidden');
+ for(const r of p.rows){r.count=0;}
+ jpReviewRender();
+};
+const jpOldSetTab=setTab;
+setTab=function(id){jpOldSetTab(id);if(id==='japanese'){jpLoadCatalog();jpRender();}};
+const jpOldUpdateView=updateView;
+updateView=function(){jpOldUpdateView();if(activeTab==='japanese')jpRender();};
+const jpOldSave=save;
+save=function(){jpOldSave();if(activeTab==='japanese')jpCounts();};
 
 </script></body></html>
