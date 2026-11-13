@@ -48,6 +48,18 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 .bulk-review .bulk-actions .danger{border-color:#a45762;background:#522b35}
 .bulk-review .result.removed{opacity:.58}
 @media(max-width:480px){.bulk-review .result img{height:70px;width:51px;flex:0 0 51px}.bulk-review .bulk-actions{width:100%;justify-content:flex-end}}
+
+/* V10: Pikachu gallery and progress */
+.pika-summary{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}.pika-summary .stat{flex:1 1 145px}
+.pika-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-top:15px}
+.pika-card{background:#1a273a;border:1px solid #364d66;border-radius:13px;padding:10px;min-width:0}
+.pika-card.is-owned{border-color:#39bf97}.pika-card img{width:100%;aspect-ratio:.715;object-fit:contain;background:#101827;border-radius:8px}
+.pika-card strong{display:block;font-size:13px;margin:7px 0 2px}.pika-card small{font-size:11px;color:#acbfd9}
+.pika-card .pika-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px}
+.pika-card .pika-actions button{padding:5px 9px;font-size:13px}.pika-card .pika-actions output{min-width:18px;text-align:center}
+.pika-card .pika-actions button:disabled{opacity:.4;cursor:not-allowed}
+.pika-tile{cursor:default}.pika-carousel-note{margin-top:8px}
+@media(max-width:600px){.pika-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pika-card{padding:7px}}
 </style></head><body><header><h1>⚡ Collect Team Reeves</h1><p>Complete your sets. Find the missing cards. Showcase your favorites.</p></header><main>
 <div class="stats" id="globalStats" style="display:none"><div class="stat"><strong id="allUnique">0</strong><small>Unique cards owned</small></div><div class="stat"><strong id="setOwned">0 / 0</strong><small>Selected set complete</small></div><div class="stat"><strong id="setsStarted">0</strong><small>Sets started</small></div><div class="stat"><strong id="favCount">0</strong><small>Showcase cards</small></div></div>
 <section class="cloud-panel" aria-label="Family cloud sync">
@@ -57,10 +69,11 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
   <div class="cloud-line" id="cloudSignedIn" style="display:none"><span id="cloudWho"></span><button id="cloudRefresh" type="button">↻ Sync now</button><button id="cloudSignOut" type="button">Sign out</button></div>
   <div class="cloud-line" id="cloudImportRow" style="display:none;margin-top:10px"><button id="cloudImportLocal" type="button">Import this device’s old cards into family collection</button><span class="cloud-note" id="cloudImportHint">This adds your previous local cards, favorites, and manual values without deleting other family entries.</span></div>
 </section>
-<nav class="tabs" aria-label="Binder sections"><button data-tab="home" class="active">🏠 Home</button><button data-tab="binder">📚 Set binder</button><button data-tab="sets">📊 My sets</button><button data-tab="add">📸 Add cards</button><button data-tab="showcase">⭐ Showcase</button><button data-tab="backup">💾 Backup</button></nav>
-<section id="home" class="tab"><div class="hero"><div><span class="eyebrow">COLLECT TEAM REEVES</span><h2>Welcome to Team Reeves’ binder</h2><p>Complete every set. Celebrate the cards you love most.</p><div class="stats"><div class="stat"><strong id="homeCount">0</strong><small>Unique cards</small></div><div class="stat"><strong id="homeSets">0</strong><small>Sets started</small></div><div class="stat"><strong id="homeStars">0</strong><small>Featured cards</small></div></div><div class="homeactions"><button class="accent" id="homeBinder">Explore collection</button><button id="homeScan">📸 Scan nine cards</button></div></div><div class="heroart" id="heroart"><div class="featureplaceholder">Star favorite cards in the binder to fill this display.</div></div></div><div class="homegrid"><div class="homebox"><h3>⭐ Featured card</h3><div id="homeFeatured" class="featured"><p class="hint">Your favorite card appears here once you star one in your binder.</p></div></div><div class="homebox"><div class="subline"><h3>Cards in your spotlight</h3><button class="small" id="homeShowcase">View all →</button></div><div class="carouselbar"><button type="button" id="favPrev" class="small" aria-label="Previous favorite">‹</button><button type="button" id="favNext" class="small" aria-label="Next favorite">›</button></div><div id="homeStrip" class="strip auto-carousel"><p class="hint">Star the best cards you own and they'll appear here.</p></div></div></div><div class="homebox"><div class="subline"><h3>💎 Top Value Cards</h3><span class="hint">TCGplayer USD market prices via TCGdex · manual fallback</span></div><div class="controls"><label class="field">Card ID (e.g. sv3pt5-199)<input id="priceCardId" placeholder="Set ID-card number"></label><label class="field">Estimated value (USD)<input id="priceAmount" type="number" min="0" step="0.01" placeholder="25.00"></label><button id="priceSave" class="accent">Save value</button></div><p id="priceMsg" class="hint">Manual value overrides automatic pricing when entered. Only cards you own appear in Top 10. Values are estimates, not sale guarantees.</p><div class="subline" style="margin:8px 0 12px"><span class="hint" id="marketStatus" role="status">Market prices load when you open Home.</span><button id="refreshMarket" class="small" type="button">↻ Refresh market prices</button></div><div class="carouselbar"><button type="button" id="valuePrev" class="small" aria-label="Previous top card">‹</button><button type="button" id="valueNext" class="small" aria-label="Next top card">›</button></div><div id="topValueStrip" class="strip auto-carousel"></div><div class="subline"><span class="hint">Total estimated value across priced copies (variants may differ)</span><strong id="knownValueTotal">$0.00</strong></div></div><div class="homebox"><div class="subline"><h3>📊 Your sets in progress</h3><button class="small" id="homeSetsButton">All sets →</button></div><div id="homeSetStrip" class="setgrid"></div></div></section>
+<nav class="tabs" aria-label="Binder sections"><button data-tab="home" class="active">🏠 Home</button><button data-tab="binder">📚 Set binder</button><button data-tab="sets">📊 My sets</button><button data-tab="add">📸 Add cards</button><button data-tab="showcase">⭐ Showcase</button><button data-tab="pikachu">⚡ Pikachu Tracker</button><button data-tab="backup">💾 Backup</button></nav>
+<section id="home" class="tab"><div class="hero"><div><span class="eyebrow">COLLECT TEAM REEVES</span><h2>Welcome to Team Reeves’ binder</h2><p>Complete every set. Celebrate the cards you love most.</p><div class="stats"><div class="stat"><strong id="homeCount">0</strong><small>Unique cards</small></div><div class="stat"><strong id="homeSets">0</strong><small>Sets started</small></div><div class="stat"><strong id="homeStars">0</strong><small>Featured cards</small></div></div><div class="homeactions"><button class="accent" id="homeBinder">Explore collection</button><button id="homeScan">📸 Scan nine cards</button></div></div><div class="heroart" id="heroart"><div class="featureplaceholder">Star favorite cards in the binder to fill this display.</div></div></div><div class="homegrid"><div class="homebox"><h3>⭐ Featured card</h3><div id="homeFeatured" class="featured"><p class="hint">Your favorite card appears here once you star one in your binder.</p></div></div><div class="homebox"><div class="subline"><h3>Cards in your spotlight</h3><button class="small" id="homeShowcase">View all →</button></div><div class="carouselbar"><button type="button" id="favPrev" class="small" aria-label="Previous favorite">‹</button><button type="button" id="favNext" class="small" aria-label="Next favorite">›</button></div><div id="homeStrip" class="strip auto-carousel"><p class="hint">Star the best cards you own and they'll appear here.</p></div></div></div><div class="homebox"><div class="subline"><h3>⚡ Team Reeves’ Pikachu Collection</h3><button class="small" id="pikaOpenTracker" type="button">Open Pikachu Tracker →</button></div><p class="hint" id="pikaHomeStatus">Finding Pikachu cards in your collection…</p><div class="carouselbar"><button id="pikaPrev" class="small" type="button" aria-label="Previous Pikachu">‹</button><button id="pikaNext" class="small" type="button" aria-label="Next Pikachu">›</button></div><div class="strip auto-carousel" id="pikaHomeCarousel"></div></div><div class="homebox"><div class="subline"><h3>💎 Top Value Cards</h3><span class="hint">TCGplayer USD market prices via TCGdex · manual fallback</span></div><div class="controls"><label class="field">Card ID (e.g. sv3pt5-199)<input id="priceCardId" placeholder="Set ID-card number"></label><label class="field">Estimated value (USD)<input id="priceAmount" type="number" min="0" step="0.01" placeholder="25.00"></label><button id="priceSave" class="accent">Save value</button></div><p id="priceMsg" class="hint">Manual value overrides automatic pricing when entered. Only cards you own appear in Top 10. Values are estimates, not sale guarantees.</p><div class="subline" style="margin:8px 0 12px"><span class="hint" id="marketStatus" role="status">Market prices load when you open Home.</span><button id="refreshMarket" class="small" type="button">↻ Refresh market prices</button></div><div class="carouselbar"><button type="button" id="valuePrev" class="small" aria-label="Previous top card">‹</button><button type="button" id="valueNext" class="small" aria-label="Next top card">›</button></div><div id="topValueStrip" class="strip auto-carousel"></div><div class="subline"><span class="hint">Total estimated value across priced copies (variants may differ)</span><strong id="knownValueTotal">$0.00</strong></div></div><div class="homebox"><div class="subline"><h3>📊 Your sets in progress</h3><button class="small" id="homeSetsButton">All sets →</button></div><div id="homeSetStrip" class="setgrid"></div></div></section>
 <section id="binder" class="tab hidden"><div class="panel"><h2>Browse a set</h2><div class="controls"><label class="field" style="flex:2 1 290px">Find set by name or printed code<input id="setLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search for a Pokémon set"><select id="set" aria-label="Select Pokémon set"><option>Loading sets…</option></select><div id="setChoices" class="setmatchlist"></div><small id="setLookupHint" class="hint">Type a set name or card code, then choose a match.</small></label><input id="search" placeholder="Search name or card number"><select id="filter" aria-label="Filter cards"><option value="all">All cards</option><option value="missing">Missing</option><option value="owned">Owned</option><option value="favorites">Showcase</option></select></div><div class="subline"><span id="setLabel" class="hint">Loading Pokémon sets…</span><span id="setProgressLabel" class="count"></span></div><div class="progress"><div id="progressFill"></div></div><p class="hint">Use + and − to adjust how many Regular, Reverse, or Holo copies you own. Tap ☆ to put a card into your showcase. Variant options are simplified—verify the printing on your physical card.</p></div><div id="cards" class="cards"></div><div id="binderEmpty" class="message hidden">No cards match.</div></section>
 <section id="sets" class="tab hidden"><div class="panel"><h2>Your set progress</h2><p class="hint">Your collection is grouped by set. Select a set to open its checklist. Completion measures unique card numbers, not all print variants.</p><div class="controls"><label class="field">Show sets<select id="setsFilter"><option value="started">Started sets</option><option value="all">All sets</option><option value="complete">Completed sets</option></select></label><label class="field">Find a set<input id="setsSearch" placeholder="Search sets"></label></div></div><div id="setsGrid" class="setgrid"></div></section>
+<section id="pikachu" class="tab hidden"><div class="panel"><h2>⚡ Pikachu Tracker</h2><p class="hint">Track Pikachu cards across English Pokémon expansions and promotional sets. This list uses cards currently returned by TCGdex, including named Pikachu variants; it may not include every release or variant ever printed. Your owned quantities and favorites are shared with the rest of Collect Team Reeves.</p><div class="pika-summary"><div class="stat"><strong id="pikaOwned">0</strong><small>Unique Pikachu cards owned</small></div><div class="stat"><strong id="pikaTotal">—</strong><small>Matching catalog cards</small></div><div class="stat"><strong id="pikaCopies">0</strong><small>Total Pikachu copies</small></div><div class="stat"><strong id="pikaPercent">—</strong><small>Catalog completion</small></div></div><div class="controls"><label class="field">Search Pikachu cards<input id="pikaSearch" type="search" placeholder="Set name, card number, promo…"></label><label class="field">Show<select id="pikaFilter"><option value="all">All Pikachu cards</option><option value="owned">Owned</option><option value="missing">Missing</option><option value="favorites">Starred Pikachu cards</option></select></label><label class="field">Set<select id="pikaSet"><option value="all">All sets</option></select></label><button id="pikaReload" type="button">↻ Refresh catalog</button></div><p class="hint" id="pikaStatus" role="status">Pikachu cards will load when you open this tab.</p><div id="pikaGallery" class="pika-gallery"></div><div class="controls" style="margin-top:15px"><button id="pikaMore" type="button" class="hidden">Show more Pikachu cards</button></div></div></section>
 <section id="add" class="tab hidden"><div class="panel"><h2>📷 Scan a 3 × 3 page of cards</h2><p class="hint">Photograph up to nine upright cards in an evenly spaced 3-by-3 grid. Use <strong>Mixed sets</strong> for assorted cards, or <strong>Single set</strong> for faster, more focused matching. The scanner reads printed card names and numbers, then suggests catalog matches for you to confirm. It cannot guarantee identification from artwork alone.</p><div class="controls"><label class="field">Photo of nine cards<input id="nineFile" type="file" accept="image/*" capture="environment"></label><label class="field">Scan mode<select id="nineMode"><option value="mixed">Mixed sets (automatic)</option><option value="single">Single set (faster)</option></select></label><label class="field" id="nineSetWrap" style="display:none">Set for recognition<input id="nineSetLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search scanning set"><select id="nineSet"><option value="">Loading sets…</option></select><div id="nineSetChoices" class="setmatchlist"></div><small id="nineSetHint" class="hint">Search by set name or code.</small></label><label class="field">Card printing<select id="nineVariant"><option value="normal">Regular</option><option value="reverse">Reverse</option><option value="holo">Holo</option></select></label></div><div class="controls"><button id="nineScan" class="accent" disabled>Identify 9 cards</button><button id="nineAddAll" disabled>Add confirmed matches</button></div><p class="hint" id="nineStatus">Photos are read in your browser. Matching queries are sent to TCGdex; the photo itself is not uploaded by this app. Always verify suggested card artwork, set and number.</p><div id="ninePreview" class="scan9preview"></div><div id="nineReview" class="scanreview" style="margin-top:12px"></div></div><div class="panel"><h2>Fastest ways to add cards</h2><p class="muted">For stacks from one expansion, using card numbers is fastest. For one-offs, photograph the bottom of the card or search in the binder.</p><div class="controls"><button id="jumpSet">Open selected set checklist</button><button id="jumpPhoto" class="accent">Take a card photo</button></div></div><div class="panel"><h2>⚡ Bulk add card numbers</h2><p class="hint">Choose any set, then enter local collector numbers separated by commas, spaces, or new lines (e.g. <code>4, 12, 12, 65, 101</code>). Repeated numbers add multiple copies. After adding, keep the list open to remove individual copies or correct mistakes.</p><label class="field" style="margin-bottom:12px">Choose a set (search by name or printed card code)<input id="bulkSetLookup" type="search" placeholder="Type SCR or Stellar Crown" autocomplete="off" aria-label="Search bulk-add set"><select id="bulkSet" aria-label="Set for bulk adding"><option value="">Loading sets…</option></select><div id="bulkSetChoices" class="setmatchlist"></div><small id="bulkSetHint" class="hint">Search for a set and select it below.</small></label><label class="field" for="bulkNumbers">Card numbers<textarea id="bulkNumbers" placeholder="4, 12, 65, 101"></textarea></label><div class="controls" style="margin-top:10px"><label class="field">Printing<select id="bulkVariant"><option value="normal">Regular</option><option value="reverse">Reverse</option><option value="holo">Holo</option></select></label><button id="bulkAdd" class="accent" type="button">Find matching cards</button></div><p id="bulkStatus" class="hint" role="status" aria-live="polite"></p><div id="bulkReview" class="bulk-review" aria-live="polite"></div><button id="bulkConfirm" type="button" class="accent hidden" style="margin-top:12px">Confirm and add matches</button></div><div class="panel" id="photoPanel"><h2>📸 Identify from a photo (beta)</h2><div class="notice">Photo scanning runs OCR in your browser. It reads the printed card number and suggests a match <strong>within the selected set</strong>. This is not guaranteed image recognition; always confirm the card before adding it.</div><div class="photoArea" style="margin-top:13px"><div class="flexcol"><label class="field">Take a photo or choose one<input type="file" id="filePhoto" accept="image/*" capture="environment"></label><img id="photoPreview" class="preview hidden" alt="Selected card photo"><button id="scanPhoto" class="accent" disabled>Find card from photo</button><div class="hint" id="ocrStatus">Tip: photograph one card straight-on, with the printed collector number near the bottom clear and in focus. The first scan downloads an OCR library.</div><label class="field">Or enter the number from the card<input id="manualNumber" placeholder="e.g. 025/198, or 25"></label><button id="findNumber">Find matching cards</button></div><div><h3 style="margin-top:0">Potential matches</h3><div id="photoResults" class="hint">Matches will appear here. Select the correct card and printing to add it.</div></div></div></div></section>
 <section id="showcase" class="tab hidden"><div class="panel"><h2>⭐ Your collection showcase</h2><p class="hint">Star any cards you own to feature them here. Showcase cards are yours to curate—not automatically ranked by price. Cards from other sets load using their saved IDs.</p></div><div id="showcaseGrid" class="showcase"></div><div id="showcaseEmpty" class="message hidden">Nothing here yet. In your binder, check off a card and tap ☆ to showcase it.</div></section>
 <section id="backup" class="tab hidden"><div class="panel"><h2>Keep your collection safe</h2><p>Export a JSON backup whenever you make major changes. With family cloud enabled, your owned cards, favorites, and manual values synchronize across approved devices.</p><div class="controls"><button id="export" class="accent">↓ Export collection backup</button><button id="import">↑ Import backup</button><input type="file" id="upload" accept="application/json,.json" class="hidden"></div><p class="hint">Import replaces local saved cards and showcase picks after confirmation. Backups also work with the earlier binder version; cards you already marked will carry over when you use this version in the same browser.</p></div></section>
@@ -612,5 +625,114 @@ if(cloudConfigured){
  cloudNotice('Cloud not configured yet — local mode');
  $('cloudHelp').textContent='Set up Supabase and fill in config.js to enable Google family sign-in. Until then, everything works locally as before.';
 }
+
+
+// V10 Pikachu collection: TCGdex name search; no separate ownership store.
+let pikaCards=[],pikaPromise=null,pikaError='',pikaAttempted=false,pikaPage=1,pikaSeq=0;
+const PIKA_PAGE_SIZE=48,PIKA_CACHE_KEY='team-reeves-pikachu-catalog-v1';
+const isPikachuName=name=>/pikachu/i.test(String(name||''));
+const pikaSetName=c=>{const meta=sets.find(s=>s.id===setOfCard(c.id));return meta?setDisplayName(meta):setOfCard(c.id).toUpperCase()};
+function pikaRefreshCounts(){
+ const ownedPika=pikaCards.filter(c=>ownedCard(c.id));
+ $('pikaOwned').textContent=ownedPika.length;
+ $('pikaTotal').textContent=pikaCards.length||'—';
+ $('pikaCopies').textContent=ownedPika.reduce((a,c)=>a+totalCopies(c.id),0);
+ $('pikaPercent').textContent=pikaCards.length?Math.round(100*ownedPika.length/pikaCards.length)+'%':'—';
+}
+async function pikaLoad(force=false){
+ if(pikaPromise)return pikaPromise;
+ if(pikaCards.length&&!force)return pikaCards;
+ pikaError='';pikaAttempted=true;
+ $('pikaStatus').textContent='Loading Pikachu cards from TCGdex…';
+ pikaPromise=(async()=>{
+  try{
+   if(!force){
+    try{let cached=JSON.parse(localStorage.getItem(PIKA_CACHE_KEY)||'null');if(cached?.updated && Date.now()-cached.updated<12*60*60*1000 && Array.isArray(cached.cards)&&cached.cards.length){pikaCards=cached.cards;}}catch{}
+   }
+   if(!pikaCards.length||force){
+    const res=await fetch(API+'/cards?name='+encodeURIComponent('pikachu'));
+    if(!res.ok)throw Error('TCGdex returned '+res.status);
+    const incoming=await res.json();
+    if(!Array.isArray(incoming))throw Error('Unexpected card catalog response');
+    const seen=new Map();for(const c of incoming){if(c?.id&&isPikachuName(c.name))seen.set(c.id,c)}
+    pikaCards=[...seen.values()].sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true}));
+    if(!pikaCards.length)throw Error('No Pikachu results found');
+    try{localStorage.setItem(PIKA_CACHE_KEY,JSON.stringify({updated:Date.now(),cards:pikaCards}))}catch{}
+   }
+   for(const c of pikaCards)cardIndex[c.id] ||= c;
+   pikaError='';pikaPage=1;
+   pikaFillSetFilter();pikaRender();pikaRenderCarousel();
+   return pikaCards;
+  }catch(e){pikaError=e.message;$('pikaStatus').textContent='Could not load Pikachu catalog: '+e.message+' — try Refresh catalog.';pikaRenderCarousel();return []}
+  finally{pikaPromise=null}
+ })();
+ return pikaPromise;
+}
+function pikaFillSetFilter(){
+ const select=$('pikaSet'),selected=select.value;
+ const byId=new Map();for(const c of pikaCards){const id=setOfCard(c.id);byId.set(id,sets.find(s=>s.id===id)?setDisplayName(sets.find(s=>s.id===id)):id.toUpperCase())}
+ select.replaceChildren(new Option('All sets','all'));
+ for(const [id,label] of [...byId].sort((a,b)=>a[1].localeCompare(b[1])))select.add(new Option(label,id));
+ select.value=byId.has(selected)?selected:'all';
+}
+function pikaFiltered(){
+ const q=safe($('pikaSearch').value),filter=$('pikaFilter').value,sid=$('pikaSet').value;
+ return pikaCards.filter(c=>{
+  if(sid!=='all'&&setOfCard(c.id)!==sid)return false;
+  if(q&&!safe(c.name+' '+c.localId+' '+c.id+' '+pikaSetName(c)).includes(q))return false;
+  if(filter==='owned'&&!ownedCard(c.id))return false;
+  if(filter==='missing'&&ownedCard(c.id))return false;
+  if(filter==='favorites'&&!(favorites[c.id]&&ownedCard(c.id)))return false;
+  return true;
+ });
+}
+function pikaRender(){
+ if(!pikaCards.length)return;
+ pikaRefreshCounts();const seq=++pikaSeq,matching=pikaFiltered();
+ $('pikaStatus').textContent=matching.length+' matching Pikachu cards · '+pikaCards.length+' in the current English TCGdex catalog';
+ const box=$('pikaGallery');box.replaceChildren();const fragment=document.createDocumentFragment();
+ for(const c of matching.slice(0,pikaPage*PIKA_PAGE_SIZE)){
+  const tile=document.createElement('article');tile.className='pika-card'+(ownedCard(c.id)?' is-owned':'');
+  if(c.image){const img=document.createElement('img');img.loading='lazy';img.alt=c.name+' '+c.id;img.src=imgUrl(c);img.onerror=()=>{if(img.src.endsWith('webp'))img.src=c.image+'/low.png';else img.style.opacity='.35'};tile.append(img)}
+  let name=document.createElement('strong');name.textContent=c.name;tile.append(name);
+  let small=document.createElement('small');small.textContent=pikaSetName(c)+' · #'+c.localId;tile.append(small);
+  const actions=document.createElement('div');actions.className='pika-actions';
+  let less=document.createElement('button');less.type='button';less.textContent='−';less.title='Remove one regular copy';less.disabled=getQty(c.id,'normal')===0;
+  let total=document.createElement('output');total.textContent=totalCopies(c.id)+' owned';
+  let more=document.createElement('button');more.type='button';more.textContent='+';more.title='Add one regular copy';
+  less.onclick=()=>{setQty(c.id,'normal',getQty(c.id,'normal')-1);pikaRender();pikaRenderCarousel()};
+  more.onclick=()=>{addQty(c.id,'normal');pikaRender();pikaRenderCarousel()};
+  let star=document.createElement('button');star.type='button';star.textContent=favorites[c.id]?'★':'☆';star.title='Toggle favorite';star.disabled=!ownedCard(c.id);
+  star.onclick=()=>{if(!ownedCard(c.id))return;favorites[c.id]=!favorites[c.id];if(!favorites[c.id])delete favorites[c.id];save();updateView();pikaRender();pikaRenderCarousel()};
+  const open=document.createElement('button');open.type='button';open.textContent='Variants';open.title='Open this card in its set binder';
+  open.onclick=async()=>{const sid=setOfCard(c.id);setTab('binder');$('setLookup').value='';populateSetChoices('set','setLookup','setLookupHint',sid);await loadSet(sid);$('search').value=c.localId;renderBinder();window.scrollTo({top:0,behavior:'smooth'})};
+  actions.append(less,total,more,star,open);tile.append(actions);fragment.append(tile);
+ }
+ if(seq!==pikaSeq)return;box.append(fragment);
+ $('pikaMore').classList.toggle('hidden',matching.length<=pikaPage*PIKA_PAGE_SIZE);
+}
+function pikaRenderCarousel(){
+ const slot=$('pikaHomeCarousel');if(!slot)return;slot.replaceChildren();
+ const cardsOwned=pikaCards.filter(c=>ownedCard(c.id));
+ const label=$('pikaHomeStatus');
+ label.textContent=pikaError?'Pikachu catalog unavailable. Try the tracker tab.':cardsOwned.length?cardsOwned.length+' unique Pikachu cards owned · '+cardsOwned.reduce((n,c)=>n+totalCopies(c.id),0)+' copies':'No Pikachu cards recorded yet. Open the Pikachu Tracker to add your first one.';
+ if(!cardsOwned.length)return;
+ for(const c of cardsOwned){
+  const item=document.createElement('div');item.className='stripitem pika-tile';
+  if(c.image){const img=document.createElement('img');img.loading='lazy';img.src=imgUrl(c);img.alt=c.name;img.onerror=()=>{if(img.src.endsWith('webp'))img.src=c.image+'/low.png'};item.append(img)}
+  let name=document.createElement('b');name.textContent=c.name;let info=document.createElement('small');info.textContent=pikaSetName(c)+' · '+totalCopies(c.id)+' owned';item.append(name,info);
+  item.onclick=()=>{setTab('pikachu');$('pikaFilter').value='owned';pikaPage=1;pikaRender()};slot.append(item);
+ }
+}
+$('pikaOpenTracker').onclick=()=>setTab('pikachu');
+$('pikaPrev').onclick=()=>moveCarousel('pikaHomeCarousel',-1);
+$('pikaNext').onclick=()=>moveCarousel('pikaHomeCarousel',1);
+$('pikaReload').onclick=()=>{pikaCards=[];pikaLoad(true)};
+$('pikaMore').onclick=()=>{pikaPage++;pikaRender()};
+for(const id of ['pikaSearch','pikaFilter','pikaSet'])$(id).addEventListener(id==='pikaSearch'?'input':'change',()=>{pikaPage=1;pikaRender()});
+const pikachuPreviousSetTab=setTab;setTab=function(id){pikachuPreviousSetTab(id);if(id==='pikachu')pikaLoad()};
+const pikachuPreviousUpdateView=updateView;updateView=function(){pikachuPreviousUpdateView();if(activeTab==='pikachu')pikaRender();if(pikaCards.length)pikaRenderCarousel()};
+const pikachuPreviousRenderHome=renderHome;renderHome=async function(){await pikachuPreviousRenderHome();if(!pikaCards.length&&!pikaPromise&&!pikaAttempted)pikaLoad();else if(pikaCards.length)pikaRenderCarousel()};
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){setInterval(()=>{if(document.hidden||activeTab!=='home')return;const el=$('pikaHomeCarousel');if(el&&el.scrollWidth>el.clientWidth+15&&!el.matches(':hover')&&!el.contains(document.activeElement))moveCarousel('pikaHomeCarousel',1)},5500)}
 
 </script></body></html>
