@@ -90,6 +90,15 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
 /* Japanese modern set browser */
 #jpCards .card{min-width:0}#jpCards .card p{overflow-wrap:anywhere}#jpBulkReview .result{flex-wrap:wrap}#jpBulkReview .result .jp-count{font-weight:700;min-width:55px;text-align:center}
 .jp-badge{display:inline-block;padding:3px 8px;border-radius:8px;background:#2e4e72;color:#d5eafa;font-weight:700;font-size:11px}
+
+/* V15 recognition: local photo comparison; results require visual confirmation */
+.symbol-recognizer{display:grid;grid-template-columns:minmax(190px,.7fr) minmax(0,1.3fr);gap:18px;align-items:start}
+.symbol-photo-preview{width:100%;max-height:270px;min-height:125px;object-fit:contain;background:#f4f7fa;border-radius:12px;padding:7px}
+.symbol-match-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-top:12px}
+.symbol-match{background:#1a2b41;border:1px solid #4c6384;border-radius:12px;padding:9px;text-align:left;display:flex;flex-direction:column;gap:5px}
+.symbol-match .symbol-art{height:77px}.symbol-match small{font-size:11px;color:#b9c9e0}.symbol-match strong{font-size:12px}.symbol-recognizer .hint{margin:6px 0}
+.symbol-recognizer .panel-list{max-height:420px;overflow:auto}
+@media(max-width:680px){.symbol-recognizer{grid-template-columns:1fr}.symbol-match-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body><header><h1>⚡ Collect Team Reeves</h1><p>Complete your sets. Find the missing cards. Showcase your favorites.</p></header><main>
 <div class="stats" id="globalStats" style="display:none"><div class="stat"><strong id="allUnique">0</strong><small>Unique cards owned</small></div><div class="stat"><strong id="setOwned">0 / 0</strong><small>Selected set complete</small></div><div class="stat"><strong id="setsStarted">0</strong><small>Sets started</small></div><div class="stat"><strong id="favCount">0</strong><small>Showcase cards</small></div></div>
 <section class="cloud-panel" aria-label="Family cloud sync">
@@ -116,6 +125,18 @@ body{background:radial-gradient(circle at 65% 0%,#1a2940,#0d1522 55%);color:#e9e
  <p class="hint">Japanese prices are not inferred from US TCGplayer market quotes. You can set manual values using the card ID shown on each card, including its <code>ja@</code> prefix.</p>
 </section>
 <section id="symbolguide" class="tab hidden" aria-label="Pokémon set symbol guide">
+<div class="panel" id="symbolRecognitionPanel"><h2>📷 Identify a set from its symbol</h2>
+<p class="hint">Upload a close, focused picture of the little expansion symbol by the collector number. For newer cards, a photo of the printed code such as SCR also works. Your photo is processed in your browser; confirm the suggested symbol visually.</p>
+<div class="symbol-recognizer"><div>
+<label class="field">Photo of a symbol or printed set code<input type="file" id="symbolPhoto" accept="image/*" capture="environment" aria-label="Photo of Pokemon set symbol"></label>
+<img id="symbolPhotoPreview" class="symbol-photo-preview hidden" alt="Your uploaded Pokémon set symbol photograph">
+<label class="field">Where is the symbol in the picture?<select id="symbolCropMode"><option value="close">Close-up of just the symbol (best)</option><option value="bottomleft">Full card — bottom left</option><option value="bottomright">Full card — bottom right</option></select></label>
+<button type="button" id="symbolRecognize" class="accent" disabled>Identify symbol</button>
+<p id="symbolScanStatus" class="hint" aria-live="polite">Choose a photo to begin. For graphical symbols, crop closely whenever possible.</p>
+</div><div>
+<label class="field">Or filter sets manually<input type="search" id="symbolCandidateSearch" placeholder="Jungle, Fossil, SCR, or a set code"></label>
+<div id="symbolRecognitionResults" class="symbol-match-grid" aria-live="polite"><p class="hint">Suggested sets will appear here. Tap one to open its binder.</p></div>
+</div></div></div>
 <div class="panel"><h2>🔎 Pokémon Set Symbol Guide</h2><p class="muted">Match the little symbol or letters printed beside the collector number on your Pokémon card. Older cards generally use a set symbol; modern cards use a printed set code like <strong>SCR</strong>.</p>
 <div class="controls"><label class="field" style="flex:2 1 230px">Search name, code, or catalog ID<input id="symbolSearch" type="search" placeholder="Try Stellar Crown, SCR, Jungle, or Base Set" autocomplete="off"></label><label class="field">Release period<select id="symbolEra"><option value="all">All eras</option><option value="1999-2003">1999–2003</option><option value="2004-2010">2004–2010</option><option value="2011-2016">2011–2016</option><option value="2017-2022">2017–2022</option><option value="2023+">2023 onward</option></select></label><label class="field">Card marker type<select id="symbolMarker"><option value="all">All markings</option><option value="code">Printed letter codes</option><option value="symbol">Set symbols</option></select></label></div>
 <p class="hint" id="symbolStatus" role="status">Loading the set catalog…</p></div><div id="symbolGrid" class="symbol-grid"></div><button class="accent hidden" id="symbolMore" type="button" style="margin:16px 0">Show more sets</button>
@@ -1102,5 +1123,176 @@ const jpOldUpdateView=updateView;
 updateView=function(){jpOldUpdateView();if(activeTab==='japanese'){jpRender();jpRenderOwned();}};
 const jpOldSave=save;
 save=function(){jpOldSave();if(activeTab==='japanese')jpCounts();};
+
+
+// V15: best-effort browser-local symbol recognition. Never auto-add inventory or assume an exact match.
+let symbolUploaded=null;
+let symbolPreviewURL=null;
+const symbolTemplateCache=new Map();
+const SYMBOL_FEATURE_SIDE=44;
+const SYMBOL_MAX_TEMPLATES=450;
+$('symbolPhoto').addEventListener('change', e=>{
+ const file=e.target.files?.[0];symbolUploaded=file||null;
+ if(symbolPreviewURL)URL.revokeObjectURL(symbolPreviewURL);
+ $('symbolRecognize').disabled=!file;
+ $('symbolRecognitionResults').replaceChildren();
+ if(!file){$('symbolPhotoPreview').classList.add('hidden');$('symbolScanStatus').textContent='Choose a photo to begin.';return;}
+ symbolPreviewURL=URL.createObjectURL(file);
+ $('symbolPhotoPreview').src=symbolPreviewURL;$('symbolPhotoPreview').classList.remove('hidden');
+ $('symbolScanStatus').textContent='Photo ready. A tightly cropped symbol usually matches better than a photo of the entire card.';
+});
+function symbolLoadImage(source){return new Promise((resolve,reject)=>{
+ const img=new Image();img.crossOrigin='anonymous';img.onload=()=>resolve(img);img.onerror=()=>reject(Error('Image unavailable'));
+ img.src=source;
+});}
+function symbolImageFromFile(file){return new Promise((resolve,reject)=>{
+ const url=URL.createObjectURL(file),img=new Image();
+ img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+ img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Could not decode photo'))};img.src=url;
+});}
+function symbolCropCanvas(img,mode){
+ let sx=0,sy=0,sw=img.width,sh=img.height;
+ if(mode!=='close'){
+  // Most photographed upright cards place the set marker in the bottom 20%.
+  // Allow selecting the opposite corner for unusual layouts.
+  sx=mode==='bottomleft'?0:img.width*.48;sy=img.height*.72;
+  sw=img.width*.52;sh=img.height*.28;
+ }
+ const scale=Math.min(1,1100/Math.max(sw,sh));
+ const cvs=document.createElement('canvas');cvs.width=Math.max(1,Math.round(sw*scale));cvs.height=Math.max(1,Math.round(sh*scale));
+ cvs.getContext('2d',{willReadFrequently:true}).drawImage(img,sx,sy,sw,sh,0,0,cvs.width,cvs.height);
+ return cvs;
+}
+function symbolSilhouette(source){
+ // Extract the foreground shape, remove transparent/white background, and normalize
+ // the bounding box so card-camera size does not determine the answer.
+ const pre=document.createElement('canvas');pre.width=120;pre.height=120;
+ const ctx=pre.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,120,120);
+ const w=source.naturalWidth||source.width,h=source.naturalHeight||source.height;
+ if(!w||!h)throw Error('Image has no dimensions');
+ const ratio=Math.min(116/w,116/h);const dw=w*ratio,dh=h*ratio;
+ ctx.drawImage(source,(120-dw)/2,(120-dh)/2,dw,dh);
+ const data=ctx.getImageData(0,0,120,120).data,grays=new Uint8Array(120*120);
+ let min=255,max=0;
+ for(let i=0;i<grays.length;i++){const j=i*4,g=Math.round(.299*data[j]+.587*data[j+1]+.114*data[j+2]);grays[i]=g;min=Math.min(min,g);max=Math.max(max,g);}
+ if(max-min<30)throw Error('Not enough contrast in this photograph');
+ // Dark foreground on white is most common in printed set symbols.
+ let threshold=Math.min(210,Math.max(65,Math.round(min+(max-min)*.52)));
+ function bounds(inverse){let x0=120,y0=120,x1=-1,y1=-1,count=0;
+  for(let y=0;y<120;y++)for(let x=0;x<120;x++){
+   const g=grays[y*120+x],active=inverse?g>threshold:g<threshold;
+   if(active){count++;x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}
+  }return {x0,y0,x1,y1,count};}
+ let b=bounds(false),inverted=false;
+ if(b.count>120*120*.72){b=bounds(true);inverted=true;}
+ if(b.count<16||b.count>120*120*.82)throw Error('Symbol is too faint or the photo includes too much background');
+ const pad=2;let bx=Math.max(0,b.x0-pad),by=Math.max(0,b.y0-pad),bw=Math.min(120-bx,b.x1-b.x0+1+pad*2),bh=Math.min(120-by,b.y1-b.y0+1+pad*2);
+ const dst=document.createElement('canvas');dst.width=SYMBOL_FEATURE_SIDE;dst.height=SYMBOL_FEATURE_SIDE;
+ const out=dst.getContext('2d',{willReadFrequently:true});out.fillStyle='#fff';out.fillRect(0,0,dst.width,dst.height);
+ const fac=Math.min(40/bw,40/bh),tw=bw*fac,th=bh*fac;
+ out.drawImage(pre,bx,by,bw,bh,(44-tw)/2,(44-th)/2,tw,th);
+ const px=out.getImageData(0,0,44,44).data,arr=new Uint8Array(44*44);
+ let active=0;
+ for(let i=0;i<arr.length;i++){
+  const j=i*4,g=.299*px[j]+.587*px[j+1]+.114*px[j+2];arr[i]=((inverted?g>threshold:g<threshold))?1:0;active+=arr[i];
+ }
+ return {pixels:arr,fill:active/arr.length};
+}
+function symbolCompare(a,b){
+ // Match graphical silhouettes with a small shift tolerance. This is a candidate
+ // ranking heuristic, NOT a learned classifier or a calibrated probability.
+ let best=0;
+ for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+  let intersection=0,union=0;
+  for(let y=1;y<43;y++)for(let x=1;x<43;x++){
+   const aa=a.pixels[y*44+x], xx=x+dx,yy=y+dy;
+   const bb=xx>=0&&xx<44&&yy>=0&&yy<44?b.pixels[yy*44+xx]:0;
+   if(aa&&bb)intersection++;if(aa||bb)union++;
+  }
+  best=Math.max(best,union?intersection/union:0);
+ }
+ return best;
+}
+async function symbolFetchTemplate(set){
+ if(symbolTemplateCache.has(set.id))return symbolTemplateCache.get(set.id);
+ const task=(async()=>{
+  for(const src of symbolImageSources(set)){
+   try{return symbolSilhouette(await symbolLoadImage(src))}catch{}
+  }
+  return null;
+ })();
+ symbolTemplateCache.set(set.id,task);return task;
+}
+function symbolResultTile(set,matchNote){
+ const tile=document.createElement('button');tile.type='button';tile.className='symbol-match';
+ const art=document.createElement('div');art.className='symbol-art';
+ if(symbolUsesCode(set)){
+  const marker=document.createElement('span');marker.className='printed-code';marker.textContent=printedSetCode(set);art.append(marker);
+ }else showSetSymbol(art,set);
+ tile.append(art);
+ const name=document.createElement('strong');name.textContent=set.name;tile.append(name);
+ const extra=document.createElement('small');extra.textContent=[printedSetCode(set),set.releaseDate,matchNote].filter(Boolean).join(' · ');tile.append(extra);
+ tile.onclick=async()=>{setTab('binder');$('setLookup').value='';populateSetChoices('set','setLookup','setLookupHint',set.id);await loadSet(set.id);window.scrollTo({top:0,behavior:'smooth'})};
+ return tile;
+}
+function symbolDisplayCandidates(items){
+ const host=$('symbolRecognitionResults');host.replaceChildren();
+ for(const entry of items)host.append(symbolResultTile(entry.set,entry.label));
+ if(!items.length){const p=document.createElement('p');p.className='hint';p.textContent='No matches found. Search the Set Symbol Guide below and compare the printed symbols manually.';host.append(p);}
+}
+$('symbolCandidateSearch').addEventListener('input',()=>{
+ const q=safe($('symbolCandidateSearch').value.trim());if(!q)return;
+ symbolDisplayCandidates(sets.filter(s=>safe([s.name,s.id,printedSetCode(s)].join(' ')).includes(q)).slice(0,18).map(set=>({set,label:'Search match'})));
+});
+async function symbolTryPrintedCode(photo){
+ try{
+  await loadOCR();const res=await Tesseract.recognize(photo,'eng');
+  const raw=(res?.data?.text||'').toUpperCase().replace(/[^A-Z0-9\s]/g,' ');
+  const tokens=new Set(raw.split(/\s+/).filter(t=>t.length>=2&&t.length<=8));
+  const matched=sets.filter(s=>symbolUsesCode(s)&&tokens.has(String(printedSetCode(s)).toUpperCase()));
+  return matched.map(set=>({set,label:'Printed-code match'})).slice(0,12);
+ }catch{return []}
+}
+$('symbolRecognize').onclick=async()=>{
+ if(!symbolUploaded)return;
+ const button=$('symbolRecognize');button.disabled=true;
+ $('symbolRecognitionResults').replaceChildren();
+ try{
+  if(!sets.length)throw Error('Set catalog still loading; please try again shortly');
+  $('symbolScanStatus').textContent='Preparing photograph…';
+  const original=await symbolImageFromFile(symbolUploaded);
+  const photo=symbolCropCanvas(original,$('symbolCropMode').value);
+  $('symbolScanStatus').textContent='Reading any printed code…';
+  const codeMatches=await symbolTryPrintedCode(photo);
+  // Comparison is only attempted for symbol-era sets; logos are never used as templates.
+  let fingerprint;
+  try{fingerprint=symbolSilhouette(photo)}catch(e){
+   if(!codeMatches.length)throw e;
+  }
+  const candidates=sets.filter(s=>!symbolUsesCode(s)&&symbolImageSources(s).length).slice(0,SYMBOL_MAX_TEMPLATES);
+  const ranked=[];
+  if(fingerprint){
+   let complete=0,valid=0;
+   // Concurrent but bounded to avoid flooding asset servers with hundreds of requests.
+   for(let i=0;i<candidates.length;i+=5){
+    const chunk=candidates.slice(i,i+5);
+    const features=await Promise.all(chunk.map(symbolFetchTemplate));
+    for(let j=0;j<chunk.length;j++){
+     if(features[j]){valid++;ranked.push({set:chunk[j],score:symbolCompare(fingerprint,features[j])});}
+    }
+    complete+=chunk.length;
+    if(complete%25<5)$('symbolScanStatus').textContent=`Comparing reference symbols… ${complete}/${candidates.length}`;
+   }
+   if(!valid&&!codeMatches.length)throw Error('Symbol images cannot be read for comparison in this browser (image-hosting restrictions may apply)');
+  }
+  ranked.sort((a,b)=>b.score-a.score);
+  // Scores are similarity rankings, not confidence percentages.
+  const symbolic=ranked.slice(0,12).map((r,i)=>({set:r.set,label:`Graphical candidate ${i+1}`}));
+  const choices=[...codeMatches,...symbolic.filter(x=>!codeMatches.some(y=>y.set.id===x.set.id))];
+  symbolDisplayCandidates(choices);
+  $('symbolScanStatus').textContent=choices.length?`${choices.length} possible sets shown. Compare the printed symbol carefully before opening a set. Rankings are experimental, not confirmed IDs.`:'No symbol match. Try a tight, well-lit close-up or the search below.';
+ }catch(e){$('symbolScanStatus').textContent='Could not recognize this symbol: '+e.message+'. Try a closer photo, or use the manual Set Symbol Guide below.';}
+ finally{button.disabled=false;}
+};
 
 </script></body></html>
